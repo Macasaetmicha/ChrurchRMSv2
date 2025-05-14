@@ -1,0 +1,236 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="parent-dashboard">
+    <div class="page-header"> 
+        <h2 class="content-header-title float-left mb-0">Dashboard</h2>
+    </div>
+
+    <div class="record-count"> 
+        <div class="card">
+            <div class="card-header">
+                <h4 class="card-title">Baptism</h4>
+            </div>
+            <div class="card-content">
+                <div class="card-info pb-0">
+                    <div class="flex-grow-1 mr-2">
+                        <div class="avatar bg-rgba-primary p-50">
+                            <div class="avatar-content">
+                                <img id="male-icon" src="{{ url_for('static', filename='images/icons/user-solid.svg') }}" alt="Baptism Icon">
+                                <i class="feather icon-user text-success font-medium-5"></i>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="flex-grow-1 mr-2">
+                        <h2 id="male-baptcount">0</h2>
+                    </div>
+
+                    <div class="flex-grow-1 mr-2">
+                        <p class="mb-0"><strong>Male</strong></p>
+                    </div>
+
+                </div>
+
+                <div class="card-info">
+                    <div class="flex-grow-1 mr-2">
+                        <div class="avatar bg-rgba-primary p-50">
+                            <div class="avatar-content">
+                                <img id="female-icon" src="{{ url_for('static', filename='images/icons/user-solid.svg') }}" alt="Baptism Icon">
+                                <i class="feather icon-user text-success font-medium-5"></i>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="flex-grow-1 mr-2">
+                        <h2 id="female-baptcount">0</h2>
+                    </div>
+
+                    <div class="flex-grow-1 mr-2">
+                        <p class="mb-0"><strong>Female</strong></p>
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h4 class="card-title">Confirmation</h4>
+            </div>
+            <div class="card-content">
+                <div class="card-info pb-0">
+                    <div class="flex-grow-1 mr-2">
+                        <div class="avatar bg-rgba-primary p-50">
+                            <div class="avatar-content">
+                                <img id="male-icon" src="{{ url_for('static', filename='images/icons/user-solid.svg') }}" alt="Baptism Icon">
+                                <i class="feather icon-user text-success font-medium-5"></i>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="flex-grow-1 mr-2">
+                        <h2 id="male-confcount">0</h2>
+                    </div>
+
+                    <div class="flex-grow-1 mr-2">
+                        <p class="mb-0"><strong>Male</strong></p>
+                    </div>
+
+                </div>
+
+                <div class="card-info">
+                    <div class="flex-grow-1 mr-2">
+                        <div class="avatar bg-rgba-primary p-50">
+                            <div class="avatar-content">
+                                <img id="female-icon" src="{{ url_for('static', filename='images/icons/user-solid.svg') }}" alt="Baptism Icon">
+                                <i class="feather icon-user text-success font-medium-5"></i>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="flex-grow-1 mr-2">
+                        <h2 id="female-confcount">0</h2>
+                    </div>
+
+                    <div class="flex-grow-1 mr-2">
+                        <p class="mb-0"><strong>Female</strong></p>
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h4 class="card-title">Wedding</h4>
+            </div>
+            <div class="card-content">
+                <div class="card-info">
+                    <div class="flex-grow-1 mr-2">
+                        <div class="avatar bg-rgba-primary p-50">
+                            <div class="avatar-content">
+                                <img id="wedd-icon" src="{{ url_for('static', filename='images/icons/user-solid.svg') }}" alt="Baptism Icon">
+                                <i class="feather icon-user text-success font-medium-5"></i>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="flex-grow-1 mr-2">
+                        <h2 id="weddingcount">0</h2>
+                    </div>
+
+                    <div class="flex-grow-1 mr-2">
+                        <p class="mb-0"><strong>Male</strong></p>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h4 class="card-title">Death</h4>
+            </div>
+            <div class="card-content">
+                <div class="card-info pb-0">
+                    <div class="flex-grow-1 mr-2">
+                        <div class="avatar bg-rgba-primary p-50">
+                            <div class="avatar-content">
+                                <img id="male-icon" src="{{ url_for('static', filename='images/icons/user-solid.svg') }}" alt="Baptism Icon">
+                                <i class="feather icon-user text-success font-medium-5"></i>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="flex-grow-1 mr-2">
+                        <h2 id="male-deathcount">0</h2>
+                    </div>
+
+                    <div class="flex-grow-1 mr-2">
+                        <p class="mb-0"><strong>Male</strong></p>
+                    </div>
+
+                </div>
+
+                <div class="card-info">
+                    <div class="flex-grow-1 mr-2">
+                        <div class="avatar bg-rgba-primary p-50">
+                            <div class="avatar-content">
+                                <img id="female-icon" src="{{ url_for('static', filename='images/icons/user-solid.svg') }}" alt="Baptism Icon">
+                                <i class="feather icon-user text-success font-medium-5"></i>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="flex-grow-1 mr-2">
+                        <h2 id="female-deathcount">0</h2>
+                    </div>
+
+                    <div class="flex-grow-1 mr-2">
+                        <p class="mb-0"><strong>Female</strong></p>
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <div class="schedule-card"> 
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0">Schedule</h4>
+            </div>
+            <div class="card-body">
+                <div class="date">
+                    <h5>March 28, 2025</h5>
+                </div>
+                <div class="schedule">
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="request-card"> 
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0">Requests</h4>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive mt-1">
+                    <table id="dashRequestTable" class="table table-hover-animation mb-0">
+                        <thead>
+                            <tr>
+                                <th>Client</th>
+                                <th>Name</th>
+                                <th>Request</th>
+                                <th>Release</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="text-truncate">John Doe</td>
+                                <td class="text-truncate">John Doe</td>
+                                <td class="text-truncate">Baptism</td>
+                                <td class="text-truncate">March 28, 2025</td>
+                            </tr>
+                            <tr>
+                                <td class="text-truncate">Jane Smith</td>
+                                <td class="text-truncate">Jane Smith</td>
+                                <td class="text-truncate">Confirmation</td>
+                                <td class="text-truncate">April 15, 2025</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+</div>
+{% endblock %}
