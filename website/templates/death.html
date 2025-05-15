@@ -3,7 +3,17 @@
 
 {% block content %}
 <header class="p-3">
-    <h2>Death</h2>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="m-0">Death</h2>
+        <div class="d-flex flex-wrap gap-2">
+            <button type="button" data-table="deathTable" data-table-name="Death" class="btn btn-danger btn-pdf">
+                    Export to PDF
+            </button>
+            <button type="button" id="addDeathBtn" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addDeathModal">
+                + Add Death Record
+            </button>
+        </div>
+    </div>
 </header>
 
 <div class="card">
@@ -11,21 +21,7 @@
         <h3>Church Records</h3>
     </div> -->
     <div class="card-body">
-        <div class="row mb-3">
-            <div class="col-lg-6 col-md-12 mb-1">
-                <div class="btn-group" role="group" aria-label="Basic example">
-                    <button type="button" data-table="deathTable" class="btn btn-primary btn-copy">Copy</button>
-                    <button type="button" data-table="deathTable" data-table-name="Death" class="btn btn-danger btn-pdf">PDF</button>
-                    <button type="button" data-table="deathTable" data-table-name="Death" class="btn btn-info btn-xcs">XCS</button>
-                </div>
-            </div>
-    
-            <div class="col-lg-6 col-md-12 mb-1 text-end">
-                <button type="button" id="addDeathBtn" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addDeathModal">
-                    + Add Death Record
-                </button>
-            </div>
-        </div>
+        
         <div class="table-responsive">
             <table id="deathTable" class="display table zero-configuration dataTable table-striped table-bordered rounded mt-2 w-100">
                 <thead>

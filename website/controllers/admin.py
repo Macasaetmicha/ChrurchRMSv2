@@ -81,4 +81,21 @@ def report():
     
     return render_template("reports.html", active_page='report', user=current_user, UserRole=UserRole)
 
+@admin.route('/history')
+@login_required
+def history():
+    if current_user.role not in [UserRole.ADMIN, UserRole.STAFF]:
+        flash('You do not have the credential to access this page.', category='warning')
+        return redirect(url_for('views.home'))
+    
+    return render_template("history.html", active_page='history', user=current_user, UserRole=UserRole)
+
+@admin.route('/accounts')
+@login_required
+def accounts():
+    if current_user.role not in [UserRole.ADMIN, UserRole.STAFF]:
+        flash('You do not have the credential to access this page.', category='warning')
+        return redirect(url_for('views.home'))
+    
+    return render_template("accounts.html", active_page='accounts', user=current_user, UserRole=UserRole)
 

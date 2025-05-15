@@ -2,5 +2,55 @@
 {% block title %}Setting{% endblock %}
 
 {% block content %}
-<h1>Setting</h1>
+<header class="p-3">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="m-0">Settings</h2>
+    </div>
+</header>
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-4 mb-3">
+            <div class="list-group">
+                <button class="list-group-item list-group-item-action nav-btn setting-list-item active" data-target="userInfo">
+                    User Information
+                </button>
+                <button class="list-group-item list-group-item-action setting-list-item nav-btn" data-target="deviceChange">
+                    Change Registered Device
+                </button>
+                <button class="list-group-item list-group-item-action setting-list-item nav-btn" data-target="recoveryOption">
+                    Recovery Option
+                </button>
+            </div>
+        </div>
+
+        <div class="col-md-8">
+            <div class="card p-3" id="contentCard">
+                <div id="userInfo" class="content-section">
+                    <h4>User Information</h4>
+                    <p><strong>Name: </strong><span id="name"></span></p>
+                    <p><strong>Role: </strong><span id="role"></span></p>
+                    <p><strong>Username: </strong><span id="userName"></span></p>
+                    <p><strong>Email: </strong><span id="email"></span></p>
+                    <p><strong>Contact Number: </strong><span id="cont_num"></span></p>
+                </div>
+                <div id="deviceChange" class="content-section d-none">
+                    <h4>Change Registered Device</h4>
+                    <p class="mt-2">Please get your device ready and open a QR Code scanner to authenticate. Take note that the device you will use now will be the device used every time you log into your account.</p>
+                    <p>Press the button below if you are ready for authentication.</p>
+                    <button class="btn">Change</button>
+                
+                </div>
+                <div id="recoveryOption" class="content-section d-none">
+                    <h4>Recovery Option</h4>
+                    <p class="mt-2">If your registered device is lost, you can get a one-time password (OTP) through SMS. The OTP will be sent to a phone number you chose, which is not linked to the lost device. Make sure your recovery number is updated.</p>
+                    <p>Current recovery phone number is <span id="phoneRecovNumber"></span></p>
+                    <p>Change recovery phone number? <a>Change</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
 {% endblock %}

@@ -406,7 +406,6 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     if (priestSelectEdit){
-        // Fetch Priest
         fetch("/api_db/get-priests")
         .then(response => response.json())
         .then(data => {

@@ -6,6 +6,7 @@ document.addEventListener("DOMContentLoaded", function () {
         console.log("Delete Pressed")
 
         event.preventDefault();
+        
         const id = button.dataset.id;
         const ceremony = button.dataset.page.replace('delete', '').toLowerCase(); 
         const deleteUrl = `/delete-${ceremony}/${id}`; 

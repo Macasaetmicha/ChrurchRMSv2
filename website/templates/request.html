@@ -5,7 +5,7 @@
 <header class="p-3">
     <div class="d-flex align-items-center mb-2 gap-2">
         <h2 class="mb-0">Requests</h2>
-        <button id="toggleCalendarBtn" class="btn btn-light">
+        <button id="toggleCalendarBtn" class="toggleCalendarBtn">
             <i class="fa fa-calendar"></i>
         </button>
     </div>
@@ -13,15 +13,12 @@
 
 
 <div class="row">
-    <!-- LEFT SIDE: Calendar + Lists (col-4 or col-lg-4) -->
     <div class="col-lg-5 col-md-12" id="calendarContainer">
         <div class="card mb-3">
             <!-- Calendar -->
             <div class="card-body">
                 <div class="calendar-header custom-calendar-header">
-                    <!-- Row 1: Title on the left, Navigation on the right -->
                     <div class="d-flex justify-content-between align-items-center mb-2">
-                        <!-- Left: Month title + Kebab menu -->
                         <div class="d-flex align-items-center">
                             <h4 id="current-date" class="mb-0 me-2"></h4> 
                             <button id="prevBtn" class="btn btn-light me-2 custom-nav-btn">
@@ -32,14 +29,13 @@
                             </button>
                         </div>
 
-                        <!-- Right: Navigation buttons -->
                         <div class="d-flex align-items-center">
                             <button type="button" class="p-0 ms-2 help-icon-btn">
                                 <i class="fa fa-question-circle help-icon ms-2" id="calendarHelpIcon"></i>
                             </button>
 
                             <button id="currentMonthBtn" class="btn btn-light today-btn ms-2">
-                                <i class="fa fa-calendar-day"></i> Today
+                                Today
                             </button>
                             <div class="dropdown">
                                 <button class="btn p-0 ms-2 border-0 kebabMenuButton" id="kebabMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
@@ -54,16 +50,13 @@
 
                 </div>
             
-
-                <!-- FullCalendar -->
                 <div id="calendar"></div>
             </div>
         </div>
     </div>
 
-    <!-- RIGHT SIDE: Quick Status + Request Table (col-8 or col-lg-8) -->
     <div class="col-lg-7 col-md-12" id="requestContainer">
-        <div class="row">
+        <!-- <div class="row">
             <div class="summaryHeader col-12">
                 <h4>Requests</h4>
             
@@ -78,10 +71,9 @@
                     </div>
                 </div>
             </div>
-        </div>
+        </div> -->
         <div class="row mt-3">
-            <!-- Quick Status Cards -->
-            <div class="col-md-4 mb-1">
+            <div class="col-6 col-sm-6 col-md-4 mb-1 countCard">
                 <div class="card text-center">
                     <div class="card-req-count d-flex justify-content-between align-items-center">
                         <h6>For Review</h6>
@@ -90,7 +82,7 @@
                 </div>
             </div>
 
-            <div class="col-md-4 mb-1">
+            <div class="col-6 col-sm-6 col-md-4 col- mb-1 countCard">
                 <div class="card text-center">
                     <div class="card-req-count d-flex justify-content-between align-items-center">
                         <h6>In Progress</h6>
@@ -99,7 +91,7 @@
                 </div>
             </div>
 
-            <div class="col-md-4 mb-1">
+            <div class="col-6 col-sm-6 col-md-4 mb-1 countCard">
                 <div class="card text-center">
                     <div class="card-req-count d-flex justify-content-between align-items-center">
                         <h6>For Pick-Up</h6>
@@ -107,10 +99,8 @@
                     </div> 
                 </div>
             </div>
-        </div>
-        <div class="row mt-2">
-            <!-- Quick Status Cards -->
-            <div class="col-md-4 mb-3">
+
+            <div class="col-6 col-sm-6 col-md-4 mb-1 countCard">
                 <div class="card text-center">
                     <div class="card-req-count d-flex justify-content-between align-items-center">
                         <h6>Completed</h6>
@@ -119,7 +109,7 @@
                 </div>
             </div>
 
-            <div class="col-md-4 mb-3">
+            <div class="col-6 col-sm-6 col-md-4 mb-1 countCard">
                 <div class="card text-center">
                     <div class="card-req-count d-flex justify-content-between align-items-center">
                         <h6>Rejected</h6>
@@ -128,7 +118,7 @@
                 </div>
             </div>
 
-            <div class="col-md-4 mb-3">
+            <div class="col-6 col-sm-6 col-md-4 mb-1 countCard">
                 <div class="card text-center">
                     <div class="card-req-count d-flex justify-content-between align-items-center">
                         <h6>Canceled</h6>
@@ -139,7 +129,7 @@
         </div>
 
         <!-- Request Table Section -->
-        <div class="card">
+        <div class="card mt-3">
             <div class="card-body">
                 <div class="table-responsive">
 
@@ -244,7 +234,6 @@
         </div>
     </div>
 
-    <!-- Modal for adding or editing events -->
     <div class="modal fade" id="addEventModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" role="dialog" aria-labelledby="addEventModal" aria-modal="true">
         <div class="modal-dialog modal-dialog-centered modal-dialog-centered modal-dialog-scrollable modal-lg">
             <div class="modal-content">
@@ -399,6 +388,26 @@
             </div>
         </div>
     </div>
+
+    <div class="modal fade" id="searchResultsModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" role="dialog"  aria-labelledby="searchResultsModalLabel" aria-hidden="true" aria-modal="true">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-centered modal-dialog-scrollable modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="searchResultsModalLabel">Matching Records</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="accordionExample" class="accordion"></div>
+                    <div id="searchResultsModalBody"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+                            
+                            
+</div>
+
 
 
 </div>

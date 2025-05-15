@@ -24,7 +24,8 @@
         <link rel="stylesheet" href="{{ url_for('static', filename='css/stepper.css') }}">
         <link rel="stylesheet" href="{{ url_for('static', filename='css/report.css') }}">
         <link rel="stylesheet" href="{{ url_for('static', filename='css/request.css') }}">
-
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/settings.css') }}">
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}">
         
         <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
         <!-- <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script> -->
@@ -49,7 +50,7 @@
         <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.5/main.min.js"></script>
 
         <script src="{{ url_for('static', filename='js/datatables.js') }}"></script>
-        <script src="{{ url_for('static', filename='js/table.js') }}"></script>
+        <!-- <script src="{{ url_for('static', filename='js/table.js') }}"></script> -->
         <script src="{{ url_for('static', filename='js/main.js') }}"></script>
         <script src="{{ url_for('static', filename='js/forms.js') }}"></script>
         <script src="{{ url_for('static', filename='js/data-submit.js') }}"></script>
@@ -58,6 +59,8 @@
         <script src="{{ url_for('static', filename='js/data-edit.js') }}"></script>
         <script src="{{ url_for('static', filename='js/request.js') }}"></script>
         <script src="{{ url_for('static', filename='js/report.js') }}"></script>
+        <script src="{{ url_for('static', filename='js/settings.js') }}"></script>
+
         <!-- <script src="{{ url_for('static', filename='js/date-picker.js') }}"></script> -->
         <!-- <script src="{{ url_for('static', filename='js/dropdowns.js') }}"></script> -->
         
@@ -114,6 +117,15 @@
                     <li class="nav-item">
                         <a class="nav-link {% if active_page == 'report' %}active{% endif %}" href="/admin/report">Report</a>
                     </li>
+                    {% if current_user.role == UserRole.ADMIN %}
+                    <li class="nav-item">
+                        <a class="nav-link {% if active_page == 'history' %}active{% endif %}" href="/admin/history">History</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if active_page == 'accounts' %}active{% endif %}" href="/admin/accounts">Accounts</a>
+                    </li>
+                    {% endif %}
+
                     {% endif %}
                     <li class="nav-item">
                         <a class="nav-link {% if active_page == 'setting' %}active{% endif %}" href="/setting">Settings</a>
@@ -126,6 +138,7 @@
               </div>
             </div>
         </nav>
+        
         
         {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}

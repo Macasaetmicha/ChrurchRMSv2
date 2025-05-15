@@ -1,0 +1,10 @@
+.setting-list-item.list-group-item {
+    border: none !important;
+    border-radius: 5px !important;
+    margin-bottom: 0.5rem;
+}
+
+.list-group-item.active{
+    color: white;
+    background-color: var(--primary-color);
+}

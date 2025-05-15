@@ -6,6 +6,7 @@ import traceback
 from sqlalchemy.exc import IntegrityError
 from datetime import datetime
 from website.models.enums import RequestStatus
+
 api_route = Blueprint('api_route', __name__)
 
 @api_route.route("/check_record", methods=["POST"])
@@ -17,18 +18,17 @@ def check_record():
 
         print("Received Keys:", list(data.keys()))
 
-        # Check for existing client records
         client = check_client(
             data.get("fname"), data.get("mname"), data.get("lname"), data.get("birthdate")
         )
 
         print(f"Client: {client}")
 
-        if client["record"]["id"]:  # If client exists, get parent details
+        if client["record"]["id"]:
             mother_id = client["record"]["mother_id"]
             father_id = client["record"]["father_id"]
             
-            parents = check_parents_by_id(mother_id, father_id)  # Function to retrieve parents using IDs
+            parents = check_parents_by_id(mother_id, father_id) 
             
             client["record"]["ligitivity"] = str(client["record"]["ligitivity"])
             client["record"]["ligitivity"] = client["record"]["ligitivity"].split(".")[-1].lower() 
@@ -56,13 +56,11 @@ def delete_record(rec_id):
     try:
 
         print(f"Deleting record with ID: {rec_id}")
-        # Retrieve the record by ID
         record = Record.query.get(rec_id)
 
         if not record:
             return jsonify({"success": False, "message": "Record not found"}), 404
 
-        # Delete the record
         db.session.delete(record)
         db.session.commit()
 
@@ -112,9 +110,7 @@ def edit_record(record_id):
         mother_id = None
         father_id = None
 
-        # --- Handle Mother ---
         if data.get("rec_moID"):
-            # Check if a mother with same name + birthday exists
             existing_mother = Parent.query.filter_by(
                 first_name=mother_data["fname"],
                 middle_name=mother_data["mname"],
@@ -128,7 +124,6 @@ def edit_record(record_id):
                 existing_mother.address = mother_data["address"]
                 mother_id = existing_mother.id
             else:
-                # update current mother record
                 mother = Parent.query.get(data.get("rec_moID"))
                 if mother:
                     mother.first_name = mother_data["fname"]
@@ -139,7 +134,6 @@ def edit_record(record_id):
                     mother.address = mother_data["address"]
                     mother_id = mother.id
 
-        # --- Handle Father ---
         if data.get("rec_faID"):
             existing_father = Parent.query.filter_by(
                 first_name=father_data["fname"],
@@ -164,7 +158,6 @@ def edit_record(record_id):
                     father.address = father_data["address"]
                     father_id = father.id
 
-        # --- Handle Client ---
         if data.get("rec_id"):
             client = Record.query.get(data.get("rec_id"))
             if client:
@@ -236,7 +229,6 @@ def submit_baptism():
             mother_id = data.get("rec_moID")
             father_id = data.get("rec_faID")
         elif any(mother_data.values()) or any(father_data.values()):
-            # Check for existing mother and father records
             parents = check_parents(mother_data, father_data)
 
             print(f"Parents: {parents}")
@@ -262,14 +254,12 @@ def submit_baptism():
         if data.get("rec_id"):
             client_id = data.get("rec_id")
         elif any([data.get("fname"), data.get("mname"), data.get("lname"), data.get("birthdate")]):
-            # Check for existing client records
             client = check_client(
                 data.get("fname"), data.get("mname"), data.get("lname"), data.get("birthdate")
             )
 
             print(f"Client: {client}")
 
-            # Add Client if record does not exist
             if client["record"]["id"] is None:
                 new_client = Record(
                     first_name=data.get("fname"),
@@ -299,12 +289,9 @@ def submit_baptism():
                 "type": "error"
             }), 200
 
-        # Check for existing Baptism records
         baptism = Baptism.query.filter(Baptism.record_id == client_id).first()
 
-        # Add Baptism if record does not exist
         if baptism is None:
-            # Check if a baptism record with the same combination already exists
             existing_baptism = Baptism.query.filter_by(
                 rec_index=data.get("rec_index"),
                 rec_book=data.get("rec_book"),
@@ -366,7 +353,6 @@ def edit_baptism(baptism_id):
                 "type": "error"
             }), 404
 
-        # Check for duplicate baptism location (excluding this record)
         duplicate_baptism = Baptism.query.filter(
             Baptism.id != baptism_id,
             Baptism.rec_index == data.get("rec_index"),
@@ -381,7 +367,6 @@ def edit_baptism(baptism_id):
                 "type": "error"
             }), 200
 
-        # Update baptism details
         baptism.baptism_date = data.get("baptDate", baptism.baptism_date)
         baptism.sponsorA = data.get("sponsorA", baptism.sponsorA)
         baptism.residenceA = data.get("residenceA", baptism.residenceA)
@@ -411,13 +396,11 @@ def delete_baptism(bapt_id):
     try:
 
         print(f"Deleting Baptism record with ID: {bapt_id}")
-        # Retrieve the record by ID
         baptism = Baptism.query.get(bapt_id)
 
         if not baptism:
             return jsonify({"success": False, "message": "Record not found"}), 404
 
-        # Delete the record
         db.session.delete(baptism)
         db.session.commit()
 
@@ -459,7 +442,6 @@ def submit_confirmation():
             mother_id = data.get("rec_moID")
             father_id = data.get("rec_faID")
         elif any(mother_data.values()) or any(father_data.values()):
-            # Check for existing mother and father records
             parents = check_parents(mother_data, father_data)
 
             print(f"Parents: {parents}")
@@ -485,14 +467,12 @@ def submit_confirmation():
         if data.get("rec_id"):
             client_id = data.get("rec_id")
         elif any([data.get("fname"), data.get("mname"), data.get("lname"), data.get("birthdate")]):
-            # Check for existing client records
             client = check_client(
                 data.get("fname"), data.get("mname"), data.get("lname"), data.get("birthdate")
             )
 
             print(f"Client: {client}")
 
-            # Add Client if record does not exist
             if client["record"]["id"] is None:
                 full_address = f"{data.get("addressLine")}, {data.get("barangay")}, {data.get("cityMun")}, {data.get("province")}, {data.get("region")}"
 
@@ -526,12 +506,9 @@ def submit_confirmation():
                 "type": "error"
             }), 200
 
-        # Check for existing Confirmation records
         confirmation = Confirmation.query.filter(Confirmation.record_id == client_id).first()
 
-        # Add Baptism if record does not exist
         if confirmation is None:
-            # Check if a confirmation record with the same combination already exists
             existing_confirmation = Confirmation.query.filter_by(
                 rec_index=data.get("rec_index"),
                 rec_book=data.get("rec_book"),
@@ -592,7 +569,6 @@ def edit_confirmation(confirmation_id):
                 "type": "error"
             }), 404
         
-        # Check for duplicate baptism location (excluding this record)
         duplicate_confirmation = Confirmation.query.filter(
             Confirmation.id != confirmation_id,
             Confirmation.rec_index == data.get("rec_index"),
@@ -607,7 +583,6 @@ def edit_confirmation(confirmation_id):
                 "type": "error"
             }), 200
 
-        # Update confirmation details
         confirmation.confirmation_date = data.get("confDate", confirmation.confirmation_date)
         confirmation.church_baptized = data.get("church_baptized", confirmation.church_baptized)
         confirmation.sponsorA = data.get("sponsorA", confirmation.sponsorA)
@@ -636,13 +611,11 @@ def delete_confirmation(conf_id):
     try:
 
         print(f"Deleting Confirmation record with ID: {conf_id}")
-        # Retrieve the record by ID
         confirmation = Confirmation.query.get(conf_id)
 
         if not confirmation:
             return jsonify({"success": False, "message": "Record not found"}), 404
 
-        # Delete the record
         db.session.delete(confirmation)
         db.session.commit()
 
@@ -684,7 +657,6 @@ def submit_wedding():
             groom_mother_id = data.get("rec_GroomMoID")
             groom_father_id = data.get("rec_GroomFaID")
         elif any(groom_mother_data.values()) or any(groom_father_data.values()):
-            # Check for existing mother and father records
             parents = check_parents(groom_mother_data, groom_father_data)
 
             print(f"Parents: {parents}")
@@ -711,14 +683,12 @@ def submit_wedding():
             groom_client_id = data.get("rec_GroomID")
             print(f"Groom Client ID: {groom_client_id}")
         elif any([data.get("weddGroomFname"), data.get("weddGroomMname"), data.get("weddGroomLname"), data.get("weddGroomBirthdate")]):
-            # Check for existing client records
             groom = check_client(
                 data.get("weddGroomFname"), data.get("weddGroomMname"), data.get("weddGroomLname"), data.get("weddGroomBirthdate")
             )
 
             print(f"Client: {groom}")
 
-            # Add Client if record does not exist
             if groom["record"]["id"] is None:
                 new_groom = Record(
                     first_name=data.get("weddGroomFname"),
@@ -770,7 +740,6 @@ def submit_wedding():
             bride_mother_id = data.get("rec_BrideMoID")
             bride_father_id = data.get("rec_BrideFaID")
         elif any(bride_mother_data.values()) or any(bride_father_data.values()):
-            # Check for existing mother and father records
             parents = check_parents(bride_mother_data, bride_father_data)
 
             print(f"Parents: {parents}")
@@ -796,14 +765,12 @@ def submit_wedding():
         if data.get("rec_BrideID"):
             bride_client_id = data.get("rec_BrideID")
         elif any([data.get("weddBrideFname"), data.get("weddBrideMname"), data.get("weddBrideLname"), data.get("weddBrideBirthdate")]):
-            # Check for existing client records
             bride = check_client(
                 data.get("weddBrideFname"), data.get("weddBrideMname"), data.get("weddBrideLname"), data.get("weddBrideBirthdate")
             )
 
             print(f"Client: {bride}")
 
-            # Add Client if record does not exist
             if bride["record"]["id"] is None:
 
                 new_bride = Record(
@@ -834,14 +801,11 @@ def submit_wedding():
                 "type": "error"
             }), 200
 
-        # Check for existing Baptism records
         wedding = Wedding.query.filter(
             (Wedding.groom_record_id == groom_client_id) & (Wedding.bride_record_id == bride_client_id)
         ).first()
 
-        # Add Baptism if record does not exist
         if wedding is None:
-            # Check if a baptism record with the same combination already exists
             exisiting_wedding = Wedding.query.filter_by(
                 rec_index=data.get("rec_index"),
                 rec_book=data.get("rec_book"),
@@ -905,7 +869,6 @@ def edit_wedding(wedding_id):
                 "type": "error"
             }), 404
         
-        # Check for duplicate baptism location (excluding this record)
         duplicate_wedding = Wedding.query.filter(
             Wedding.id != wedding_id,
             Wedding.rec_index == data.get("rec_index"),
@@ -920,7 +883,6 @@ def edit_wedding(wedding_id):
                 "type": "error"
             }), 200
 
-        # Update confirmation details
         wedding.wedding_date = data.get("weddDate", wedding.wedding_date)
 
         wedding.license_number = data.get("license_number", wedding.license_number)
@@ -953,13 +915,11 @@ def delete_wedding(wedd_id):
     try:
 
         print(f"Deleting Wedding record with ID: {wedd_id}")
-        # Retrieve the record by ID
         wedding = Wedding.query.get(wedd_id)
 
         if not wedding:
             return jsonify({"success": False, "message": "Record not found"}), 404
 
-        # Delete the record
         db.session.delete(wedding)
         db.session.commit()
 
@@ -1001,7 +961,6 @@ def submit_death():
             mother_id = data.get("rec_moID")
             father_id = data.get("rec_faID")
         elif any(mother_data.values()) or any(father_data.values()):
-            # Check for existing mother and father records
             parents = check_parents(mother_data, father_data)
 
             print(f"Parents: {parents}")
@@ -1027,14 +986,12 @@ def submit_death():
         if data.get("rec_id"):
             client_id = data.get("rec_id")
         elif any([data.get("fname"), data.get("mname"), data.get("lname"), data.get("birthdate")]):
-            # Check for existing client records
             client = check_client(
                 data.get("fname"), data.get("mname"), data.get("lname"), data.get("birthdate")
             )
 
             print(f"Client: {client}")
 
-            # Add Client if record does not exist
             if client["record"]["id"] is None:
                 full_address = f"{data.get("addressLine")}, {data.get("barangay")}, {data.get("cityMun")}, {data.get("province")}, {data.get("region")}"
 
@@ -1068,12 +1025,9 @@ def submit_death():
                 "type": "error"
             }), 200
 
-        # Check for existing Confirmation records
         death = Death.query.filter(Death.record_id == client_id).first()
 
-        # Add Baptism if record does not exist
         if death is None:
-            # Check if a death record with the same combination already exists
             existing_death = Death.query.filter_by(
                 rec_index=data.get("rec_index"),
                 rec_book=data.get("rec_book"),
@@ -1136,7 +1090,6 @@ def edit_death(death_id):
                 "type": "error"
             }), 404
         
-        # Check for duplicate baptism location (excluding this record)
         duplicate_death = Death.query.filter(
             Death.id != death_id,
             Death.rec_index == data.get("rec_index"),
@@ -1151,7 +1104,6 @@ def edit_death(death_id):
                 "type": "error"
             }), 200
 
-        # Update confirmation details
         death.death_date = data.get("deathDate", death.death_date)
 
         death.burial_date = data.get("burialDate", death.burial_date)
@@ -1184,13 +1136,11 @@ def delete_death(death_id):
     try:
 
         print(f"Deleting Death record with ID: {death_id}")
-        # Retrieve the record by ID
         death = Death.query.get(death_id)
 
         if not death:
             return jsonify({"success": False, "message": "Record not found"}), 404
 
-        # Delete the record
         db.session.delete(death)
         db.session.commit()
 
@@ -1216,14 +1166,10 @@ def submit_priest():
             priest_name = f"Fr. {priest_name}"  
 
 
-        # Check for existing Baptism records
         priest = Priest.query.filter(
-            Priest.name.ilike(priest_name),  
-            Priest.position.ilike(data.get("position")), 
-            Priest.church.ilike(data.get("church")) 
+            Priest.name.ilike(priest_name)
         ).first()
 
-        # Add Priest if record does not exist
         if priest is None:
             new_priest = Priest(
                 name=priest_name,
@@ -1254,17 +1200,18 @@ def submit_priest():
 @api_route.route('/edit-priest/<int:priest_id>', methods=['PUT'])
 def edit_priest(priest_id):
     data = request.form or request.json
-    # Fetch the priest by ID
     priest = Priest.query.get(priest_id)
     if not priest:
         return jsonify({'error': 'Priest not found'}), 404
+    
+    priest_name = data.get("name")
+    
+    if "Father " not in priest_name and "Fr. " not in priest_name:
+            priest_name = f"Fr. {priest_name}"  
 
     duplicate = Priest.query.filter(
         Priest.id != priest_id,
-        Priest.name == data.get('name', priest.name),
-        Priest.position == data.get('position', priest.position),
-        Priest.status == data.get('status', priest.status),
-        Priest.church == data.get('church', priest.church)
+        Priest.name == priest_name
     ).first()
 
     if duplicate:
@@ -1273,8 +1220,7 @@ def edit_priest(priest_id):
         }), 400
 
 
-    # Update fields from request data
-    priest.name = data.get('name', priest.name)
+    priest.name = priest_name
     priest.position = data.get('position', priest.position)
     priest.status = data.get('status', priest.status)
     priest.church = data.get('church', priest.church)  
@@ -1297,13 +1243,11 @@ def delete_priest(priest_id):
     try:
 
         print(f"Deleting Priest with ID: {priest_id}")
-        # Retrieve the record by ID
         priest = Priest.query.get(priest_id)
 
         if not priest:
             return jsonify({"success": False, "message": "Priest not found"}), 404
 
-        # Delete the record
         db.session.delete(priest)
         db.session.commit()
 
@@ -1337,15 +1281,12 @@ def submit_event():
         status = data.get("eventStatus")
         description = data.get("eventDescription")
 
-        # Check if all required fields are provided
         if not title or not start_date or not end_date or not category or not status:
             return jsonify({"message": "Missing required fields", "type": "error"}), 400
         
-        # Convert the start and end times from strings to datetime objects
         start_datetime = datetime.fromisoformat(start_date)
         end_datetime = datetime.fromisoformat(end_date)
 
-        # Optionally, you can check if an event with the same title and start time already exists
         existing_event = Schedule.query.filter_by(title=title, start_date=start_datetime, end_date=end_datetime).first()
 
         if existing_event:
@@ -1354,7 +1295,6 @@ def submit_event():
                 "type": "error"
             }), 200
         
-        # Create a new event object and add it to the database
         new_event = Schedule(
             title=title,
             start_date=start_datetime,
@@ -1374,20 +1314,18 @@ def submit_event():
         }), 200
 
     except Exception as e:
-        db.session.rollback()  # Rollback any changes in case of an error
+        db.session.rollback() 
         print("ERROR OCCURRED:", str(e))
         return jsonify({"error": str(e)}), 500
 
 @api_route.route('/edit-schedule/<int:schedId>', methods=['PUT'])
 def edit_event(schedId):
     data = request.form or request.json
-    # Fetch the priest by ID
     schedule = Schedule.query.get(schedId)
 
     if not schedule:
         return jsonify({'error': 'Schedule not found'}), 404
 
-    # Update fields from request data
     schedule.title = data.get('eventTitleEdit', schedule.title)
     schedule.start_date = data.get('eventStartEdit', schedule.start_date)
     schedule.end_date = data.get('eventEndEdit', schedule.end_date)
@@ -1416,13 +1354,11 @@ def delete_event(schedId):
     try:
 
         print(f"Deleting Schedule with ID: {schedId}")
-        # Retrieve the record by ID
         schedule = Schedule.query.get(schedId)
 
         if not schedule:
             return jsonify({"success": False, "message": "Schedule not found"}), 404
 
-        # Delete the record
         db.session.delete(schedule)
         db.session.commit()
 

@@ -10,6 +10,8 @@ werkzeug
 fido2 
 cachetools
 
+rapidfuzz
+
 #For Migrations
 $env:FLASK_APP = "main.py"
 flask db migrate -m "Description of the migration"
