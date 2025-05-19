@@ -17,9 +17,11 @@
                 <div class="mb-3">
                     <label for="password" class="form-label">Password</label>
                     <input type="password" class="form-control" id="password" name="password" placeholder="Enter Password" required>
+                    <div class="form-text mt-1 text-end">
+                        <a href="#" id="forgotPassBtn" data-bs-toggle="modal" data-bs-target="#forgotPassModal">Forgot Password?</a>
+                    </div>
+
                 </div>
-               
-                <br>
 
                 <button type="submit" class="btn btn-primary">Authenticate</button>
                 <div class="form-text">
@@ -31,5 +33,29 @@
 
         </div>
     </div>
-    
+
+    <div class="modal-container">
+        <div class="modal fade" id="forgotPassModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="forgotPassModal" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-md">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title"><span id="modalHeader">Recover Account</span></h5>
+                        <button type="button" id="close-modal" class="btn-close close-modal" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body p-4">
+                        <label for="recoveryEmail" class="form-label">Enter your email</label>
+                        <input type="email" id="recoveryEmail" class="form-control" placeholder="e.g. user@example.com" required>
+                        <small class="form-text text-muted">
+                        A link will be sent to this email address for account recovery.
+                        </small>
+                        <button id="sendEmailBtn" class="btn btn-primary w-100 mt-3">
+                            Recover
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="{{ url_for('static', filename='js/forgotPass.js') }}"></script>
+
 {% endblock %}

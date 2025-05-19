@@ -25,6 +25,7 @@ document.addEventListener("DOMContentLoaded", () => {
         authenticateButton.onclick = onAuthenticateButtonClicked;
     }
 
+    
     $("#signupForm").on("submit", function (event) {
         event.preventDefault();
 
@@ -133,8 +134,8 @@ async function onAuthenticateButtonClicked() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-            response,  
-            user_id: userId 
+            response,   
+            user_id: userId  
         }),
     });
     let data = await result.json();

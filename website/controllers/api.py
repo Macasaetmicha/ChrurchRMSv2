@@ -108,15 +108,17 @@ def register_complete():
         return jsonify({"status": "error", "message": "Invalid FIDO payload"}), 400
 
     try:
+        # Inject FIDO info into temp user data
         temp_user_data["fido_info"] = auth_data.hex()
 
+        # Create the user from temporary data
         user = User(**temp_user_data)
 
         db.session.add(user)
         db.session.commit()
 
         print(f"User created and FIDO info saved for user_id: {user.id}")
-        session.pop(f"temp_user_{user_id}", None) 
+        session.pop(f"temp_user_{user_id}", None)  # cleanup temp data
 
     except Exception as e:
         db.session.rollback()
@@ -137,7 +139,12 @@ def registerStaff_begin():
     if not temp_user:
         return jsonify({"status": "error", "message": "User ID is required"}), 400
 
-
+    # user = User.query.get(user_id)  
+    
+    # if not user:
+    #     return jsonify({"status": "error", "message": "User not found"}), 404
+    
+    # print(f"User information: ", user)
 
     if temp_user.get("fido_info"):
         print(f"User already has a fido token registered. {temp_user.get("fido_info")}")
@@ -197,15 +204,17 @@ def registerStaff_complete():
         return jsonify({"status": "error", "message": "Invalid FIDO payload"}), 400
 
     try:
+        # Inject FIDO info into temp user data
         temp_user_data["fido_info"] = auth_data.hex()
 
+        # Create the user from temporary data
         user = User(**temp_user_data)
 
         db.session.add(user)
         db.session.commit()
 
         print(f"User created and FIDO info saved for user_id: {user.id}")
-        session.pop(f"temp_user_{user_id}", None) 
+        session.pop(f"temp_user_{user_id}", None)  # cleanup temp data
 
     except Exception as e:
         db.session.rollback()
@@ -215,6 +224,78 @@ def registerStaff_complete():
 
     return jsonify({"status": "OK", "type":"success", "message": "Staff registered successfully"})
 
+@api.route("/update/begin", methods=["POST"])
+@login_required
+def update_begin():
+    print("UPDATE BEGIN")
+    user_id = current_user.id
+
+    try:
+        user = User.query.filter_by(id=user_id).first()
+        if not user:
+            return jsonify({'message': 'User not found.'}), 404
+
+        # user.fido_info = None
+        # db.session.commit()
+        # print("FIDO info cleared successfully.")
+        # print("Current USer fido info", current_user.fido_info)
+
+        # if user.fido_info:
+        #     return abort(400, "FIDO has already been activated")
+        
+        print('Current User Options:')
+        print(dir(current_user))
+
+        # Generate registration challenge
+        options, state = fido_server.register_begin(
+            PublicKeyCredentialUserEntity(
+                id=uuid.uuid4().bytes,
+                name=current_user.username,
+                display_name=f'{current_user.first_name} {current_user.last_name}',
+            ),
+            user_verification=fido2.webauthn.UserVerificationRequirement.DISCOURAGED,
+        )
+
+        # Save challenge state
+        active_challenges[current_user.id] = state
+        print('Here is the Dict File')
+        print(dict(options))
+        return jsonify(dict(options))
+
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error during update_begin: {e}")
+        return jsonify({'message': f"Internal Server Error: {str(e)}"}), 500
+
+
+
+@api.route("/update/complete", methods=["POST"])
+@login_required
+def update_complete():
+    fido_state = active_challenges.pop(current_user.id, None)
+    if fido_state is None:
+        return abort(400, 'No FIDO state available')
+
+    try:
+        auth_data = fido_server.register_complete(fido_state, request.json)
+    except Exception as e:
+        print(f"FIDO validation failed: {e}")
+        return abort(400, 'Invalid payload')
+
+    try:
+        user = User.query.get(current_user.id)
+        if not user:
+            return jsonify({'message': 'User not found.'}), 404
+
+        user.fido_info = auth_data.hex()  # ✅ Update fido_info directly
+        db.session.commit()
+
+        return jsonify({"status": "OK"})
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error saving FIDO info: {e}")
+        return jsonify({'message': 'Internal Server Error'}), 500
+
 
 @api.route("/authenticate/begin", methods=["POST"])
 def authenticate_begin():
@@ -223,6 +304,7 @@ def authenticate_begin():
     challenge to the authenticate_complete endpoint. This endpoint can only be accessed if the user has already provided
     valid credentials (username and password)."""
     print('RUNNING AUTHENTICATE BEGIN')
+    # which user is trying to log in? Is the user even logged in?
     user = load_user_from_fido_session()
     print(user)
     if user is None:
@@ -258,6 +340,7 @@ def authenticate_complete():
     new session for the user if the challenge has been signed correctly. The endpoint can only
     be accessed if the user has already provided his username and password. """
 
+    # which user is trying to log in? Is the user even logged in?
     user = load_user_from_fido_session()
     if user is None:
         return jsonify({"status": "error", "message": "Unauthorized"}), 401
@@ -273,6 +356,7 @@ def authenticate_complete():
     # load the information about the token (they were persisted when the token was registered)
     credential_data = fido2.webauthn.AuthenticatorData.fromhex(user.fido_info).credential_data
 
+    # ensure that the client signed the challenge correctly
     try:
         fido_server.authenticate_complete(
             fido_state,
@@ -297,7 +381,8 @@ def delete_account(account_id):
     if current_user.role != UserRole.ADMIN:  
         return jsonify({"error": "Unauthorized"}), 403
 
-    account = User.query.get(account_id)  
+    # Fetch the record from DB
+    account = User.query.get(account_id)  # or your model
 
     if not account:
         return jsonify({"error": "Record not found"}), 404

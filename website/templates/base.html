@@ -49,6 +49,15 @@
         
         <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.5/main.min.js"></script>
 
+        <!-- Buttons extension -->
+        <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.1/css/buttons.dataTables.min.css">
+        <script src="https://cdn.datatables.net/buttons/2.4.1/js/dataTables.buttons.min.js"></script>
+        <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.html5.min.js"></script>
+        <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.print.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+
         <script src="{{ url_for('static', filename='js/datatables.js') }}"></script>
         <!-- <script src="{{ url_for('static', filename='js/table.js') }}"></script> -->
         <script src="{{ url_for('static', filename='js/main.js') }}"></script>
@@ -59,14 +68,16 @@
         <script src="{{ url_for('static', filename='js/data-edit.js') }}"></script>
         <script src="{{ url_for('static', filename='js/request.js') }}"></script>
         <script src="{{ url_for('static', filename='js/report.js') }}"></script>
-        <script src="{{ url_for('static', filename='js/settings.js') }}"></script>
+        <!-- <script src="{{ url_for('static', filename='js/audit.js') }}"></script> -->
+        <script src="{{ url_for('static', filename='js/request_client.js') }}"></script>
 
         <!-- <script src="{{ url_for('static', filename='js/date-picker.js') }}"></script> -->
         <!-- <script src="{{ url_for('static', filename='js/dropdowns.js') }}"></script> -->
         
     </head>
 
-    <body>
+    <body class="{% block body_class %}{% endblock %}">
+        {% if not no_navbar %}
         <nav class="navbar navbar-expand-lg bg-body-tertiary">
             <div class="container-fluid">
                 <a class="navbar-brand" href="#">
@@ -119,7 +130,7 @@
                     </li>
                     {% if current_user.role == UserRole.ADMIN %}
                     <li class="nav-item">
-                        <a class="nav-link {% if active_page == 'history' %}active{% endif %}" href="/admin/history">History</a>
+                        <a class="nav-link {% if active_page == 'audit' %}active{% endif %}" href="/admin/audit-log">History</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link {% if active_page == 'accounts' %}active{% endif %}" href="/admin/accounts">Accounts</a>
@@ -138,7 +149,7 @@
               </div>
             </div>
         </nav>
-        
+        {% endif %}
         
         {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
@@ -172,8 +183,8 @@
         {% endif %}
         {% endwith %}
 
-        <div class="container-fluid">
-            <div class="main-content">
+        <div class="container-fluid {% block container_body_class %}{% endblock %}">
+            <div class="main-content {% block main_body_class %}{% endblock %}">
                 {% block content %}
                 {% endblock %}
             </div>

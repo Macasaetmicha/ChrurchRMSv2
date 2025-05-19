@@ -1,12 +1,20 @@
-from flask import Blueprint, render_template, request, abort, flash, redirect, url_for, jsonify
+from flask import Blueprint, render_template, request, abort, flash, redirect, url_for, jsonify, current_app
 from flask_login import login_required, current_user
-from ..models import db, User, UserRole, Record, Request, Schedule, Parent, Baptism, Confirmation, Wedding, Death, Priest, Region, Province, CityMun, Barangay
+from ..models import db, User, UserRole,AuditLog, Record, Request, Schedule, Parent, Baptism, Confirmation, Wedding, Death, Priest, Region, Province, CityMun, Barangay
 from enum import Enum
 from datetime import datetime, timedelta
 import json
 from sqlalchemy.sql import func
 from rapidfuzz import fuzz
 from sqlalchemy.orm import joinedload
+from sqlalchemy import extract, text
+import secrets
+from flask_mail import Message
+import os
+from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
+from werkzeug.security import generate_password_hash
+from website import mail
+import traceback 
 
 api_db = Blueprint('api_db', __name__)
 
@@ -77,6 +85,7 @@ def get_records():
             "citymun": CityMun.query.filter_by(citymunCode=record.citymun).first().citymunDesc if record.citymun else None,
             "brgy": Barangay.query.filter_by(brgyCode=record.brgy).first().brgyDesc if record.brgy else None,
             
+            
             "mother": {
                 "id": record.mother_id,
                 "first_name": Parent.query.get(record.mother_id).first_name if record.mother_id else None,
@@ -96,6 +105,7 @@ def get_records():
                 "address": Parent.query.get(record.father_id).address if record.father_id else None
             },
 
+            
             "ceremonies": {
                 "baptism": {
                     "index": record.baptism.rec_index if record.baptism else None,
@@ -163,6 +173,7 @@ def get_records_view(record_id):
             "desc": Barangay.query.filter_by(brgyCode=record.brgy).first().brgyDesc if record.brgy else None
         } if record.brgy else None,
 
+        
         "mother": {
             "id": record.mother_id,
             "first_name": Parent.query.get(record.mother_id).first_name if record.mother_id else None,
@@ -182,6 +193,7 @@ def get_records_view(record_id):
             "address": Parent.query.get(record.father_id).address if record.father_id else None
         },
 
+        
         "ceremonies": {
             "baptism": {
                 "index": record.baptism.rec_index if record.baptism else None,
@@ -229,19 +241,20 @@ def get_baptisms():
     print(f"Baptism Data: {baptisms}")
     data = []
     for baptism in baptisms:
-        record = Record.query.get(baptism.record_id) 
-        priest = Priest.query.get(baptism.priest_id) 
+        record = Record.query.get(baptism.record_id)  
+        priest = Priest.query.get(baptism.priest_id)  
         region = Region.query.filter_by(regCode=record.region).first()
         province = Province.query.filter_by(provCode=record.province).first()
         citymun = CityMun.query.filter_by(citymunCode=record.citymun).first()
         brgy = Barangay.query.filter_by(brgyCode=record.brgy).first()
 
-        mother = Parent.query.get(record.mother_id) if record and record.mother_id else None 
-        father = Parent.query.get(record.father_id) if record and record.father_id else None 
+        mother = Parent.query.get(record.mother_id) if record and record.mother_id else None  
+        father = Parent.query.get(record.father_id) if record and record.father_id else None  
         
         baptism_data = {
             "id": baptism.id,
             "baptism_date": baptism.baptism_date.strftime('%Y-%m-%d'),
+            
             "record": {
                 "id": record.id if record else None,
                 "first_name": record.first_name if record else None,
@@ -254,11 +267,13 @@ def get_baptisms():
                 "brgy": brgy.brgyDesc if brgy else None
             },
 
+            
             "priest": {
                 "id": priest.id if priest else None,
                 "name": priest.name if priest else None
             },
 
+            
             "mother": {
                 "id": mother.id if mother else None,
                 "first_name": mother.first_name if mother else None,
@@ -283,15 +298,15 @@ def get_baptisms_view(bapt_id):
     print(f"Baptism Data: {baptism}")
     data = []
     
-    record = Record.query.get(baptism.record_id)
-    priest = Priest.query.get(baptism.priest_id) 
+    record = Record.query.get(baptism.record_id)  
+    priest = Priest.query.get(baptism.priest_id)  
     region = Region.query.filter_by(regCode=record.region).first()
     province = Province.query.filter_by(provCode=record.province).first()
     citymun = CityMun.query.filter_by(citymunCode=record.citymun).first()
     brgy = Barangay.query.filter_by(brgyCode=record.brgy).first()
 
-    mother = Parent.query.get(record.mother_id) if record and record.mother_id else None 
-    father = Parent.query.get(record.father_id) if record and record.father_id else None
+    mother = Parent.query.get(record.mother_id) if record and record.mother_id else None  
+    father = Parent.query.get(record.father_id) if record and record.father_id else None  
     
     baptism_data = {
         "id": baptism.id,
@@ -305,6 +320,7 @@ def get_baptisms_view(bapt_id):
         "rec_page": baptism.rec_page,
         "rec_line": baptism.rec_line,
 
+        
         "record": {
             "id": record.id if record else None,
             "first_name": record.first_name if record else None,
@@ -320,11 +336,13 @@ def get_baptisms_view(bapt_id):
             "brgy": brgy.brgyDesc if brgy else None
         },
 
+        
         "priest": {
             "id": priest.id if priest else None,
             "name": priest.name if priest else None
         },
 
+        
         "mother": {
             "id": mother.id if mother else None,
             "first_name": mother.first_name if mother else None,
@@ -350,19 +368,20 @@ def get_confirmation():
     
     data = []
     for confirmation in confirmation:
-        record = Record.query.get(confirmation.record_id)
-        priest = Priest.query.get(confirmation.priest_id) 
+        record = Record.query.get(confirmation.record_id)  
+        priest = Priest.query.get(confirmation.priest_id)  
         region = Region.query.filter_by(regCode=record.region).first()
         province = Province.query.filter_by(provCode=record.province).first()
         citymun = CityMun.query.filter_by(citymunCode=record.citymun).first()
         brgy = Barangay.query.filter_by(brgyCode=record.brgy).first()
-        mother = Parent.query.get(record.mother_id) if record and record.mother_id else None 
-        father = Parent.query.get(record.father_id) if record and record.father_id else None 
+        mother = Parent.query.get(record.mother_id) if record and record.mother_id else None  
+        father = Parent.query.get(record.father_id) if record and record.father_id else None  
 
         confirmation_data = {
             "id": confirmation.id,
             "confirmation_date": confirmation.confirmation_date.strftime('%Y-%m-%d'),
 
+            
             "record": {
                 "id": record.id if record else None,
                 "first_name": record.first_name if record else None,
@@ -375,11 +394,13 @@ def get_confirmation():
                 "brgy": brgy.brgyDesc if brgy else None
             },
 
+            
             "priest": {
                 "id": priest.id if priest else None,
                 "name": priest.name if priest else None
             },
 
+            
             "mother": {
                 "id": mother.id if mother else None,
                 "first_name": mother.first_name if mother else None,
@@ -405,14 +426,14 @@ def get_confirmations_view(conf_id):
  
     data = []
 
-    record = Record.query.get(confirmation.record_id)
-    priest = Priest.query.get(confirmation.priest_id) 
+    record = Record.query.get(confirmation.record_id)  
+    priest = Priest.query.get(confirmation.priest_id)  
     region = Region.query.filter_by(regCode=record.region).first()
     province = Province.query.filter_by(provCode=record.province).first()
     citymun = CityMun.query.filter_by(citymunCode=record.citymun).first()
     brgy = Barangay.query.filter_by(brgyCode=record.brgy).first()
-    mother = Parent.query.get(record.mother_id) if record and record.mother_id else None
-    father = Parent.query.get(record.father_id) if record and record.father_id else None 
+    mother = Parent.query.get(record.mother_id) if record and record.mother_id else None  
+    father = Parent.query.get(record.father_id) if record and record.father_id else None  
 
     confirmation_data = {
         "id": confirmation.id,
@@ -425,6 +446,7 @@ def get_confirmations_view(conf_id):
         "rec_page": confirmation.rec_page,
         "rec_line": confirmation.rec_line,
 
+        
         "record": {
             "id": record.id if record else None,
             "first_name": record.first_name if record else None,
@@ -440,11 +462,13 @@ def get_confirmations_view(conf_id):
             "brgy": brgy.brgyDesc if brgy else None
         },
 
+        
         "priest": {
             "id": priest.id if priest else None,
             "name": priest.name if priest else None
         },
 
+        
         "mother": {
             "id": mother.id if mother else None,
             "first_name": mother.first_name if mother else None,
@@ -470,20 +494,25 @@ def get_wedding():
     
     data = []
     for wedding in wedding:
-        groom_record = Record.query.get(wedding.groom_record_id) 
-        bride_record = Record.query.get(wedding.bride_record_id) 
-        priest = Priest.query.get(wedding.priest_id) 
+        groom_record = Record.query.get(wedding.groom_record_id)  
+        bride_record = Record.query.get(wedding.bride_record_id)  
+        priest = Priest.query.get(wedding.priest_id)  
         groom_province = Province.query.filter_by(provCode=groom_record.province).first()
         groom_citymun = CityMun.query.filter_by(citymunCode=groom_record.citymun).first()
         groom_brgy = Barangay.query.filter_by(brgyCode=groom_record.brgy).first()
         bride_province = Province.query.filter_by(provCode=bride_record.province).first()
         bride_citymun = CityMun.query.filter_by(citymunCode=bride_record.citymun).first()
         bride_brgy = Barangay.query.filter_by(brgyCode=bride_record.brgy).first()
-        
+        # groom_mother = Parent.query.get(groom_record.mother_id) if groom_record and groom_record.mother_id else None  # Get mother info
+        # groom_father = Parent.query.get(groom_record.father_id) if groom_record and groom_record.father_id else None  # Get father info
+        # bride_mother = Parent.query.get(bride_record.mother_id) if bride_record and bride_record.mother_id else None  # Get mother info
+        # bride_father = Parent.query.get(bride_record.father_id) if bride_record and bride_record.father_id else None  # Get father info
+
         wedding_data = {
             "id": wedding.id,
             "wedding_date": wedding.wedding_date.strftime('%Y-%m-%d'),
 
+            
             "groom": {
                 "groom_id": groom_record.id,
                 "first_name": groom_record.first_name if groom_record else None,
@@ -507,12 +536,37 @@ def get_wedding():
                 "brgy": bride_brgy.brgyDesc if bride_brgy else None
             },
 
+            
             "priest": {
                 "id": priest.id if priest else None,
                 "name": priest.name if priest else None
             },
 
-        
+            #Fetch Related Parents Data
+            # "groom_mother": {
+            #     "id": groom_mother.id if groom_mother else None,
+            #     "first_name": groom_mother.first_name if groom_mother else None,
+            #     "middle_name": groom_mother.middle_name if groom_mother else None,
+            #     "last_name": groom_mother.last_name if groom_mother else None
+            # },
+            # "groom_father": {
+            #     "id": groom_father.id if groom_father else None,
+            #     "first_name": groom_father.first_name if groom_father else None,
+            #     "middle_name": groom_father.middle_name if groom_father else None,
+            #     "last_name": groom_father.last_name if groom_father else None
+            # },
+            # "bride_mother": {
+            #     "id": bride_mother.id if bride_mother else None,
+            #     "first_name": bride_mother.first_name if bride_mother else None,
+            #     "middle_name": bride_mother.middle_name if bride_mother else None,
+            #     "last_name": bride_mother.last_name if bride_mother else None
+            # },
+            # "bride_father": {
+            #     "id": bride_father.id if bride_father else None,
+            #     "first_name": bride_father.first_name if bride_father else None,
+            #     "middle_name": bride_father.middle_name if bride_father else None,
+            #     "last_name": bride_father.last_name if bride_father else None
+            # }
         }
         data.append(wedding_data)
 
@@ -526,9 +580,9 @@ def get_weddings_view(wedd_id):
 
     data = []
 
-    groom_record = Record.query.get(wedding.groom_record_id)
-    bride_record = Record.query.get(wedding.bride_record_id) 
-    priest = Priest.query.get(wedding.priest_id) 
+    groom_record = Record.query.get(wedding.groom_record_id)  
+    bride_record = Record.query.get(wedding.bride_record_id)  
+    priest = Priest.query.get(wedding.priest_id)  
     groom_region = Region.query.filter_by(regCode=groom_record.region).first()
     groom_province = Province.query.filter_by(provCode=groom_record.province).first()
     groom_citymun = CityMun.query.filter_by(citymunCode=groom_record.citymun).first()
@@ -537,7 +591,11 @@ def get_weddings_view(wedd_id):
     bride_province = Province.query.filter_by(provCode=bride_record.province).first()
     bride_citymun = CityMun.query.filter_by(citymunCode=bride_record.citymun).first()
     bride_brgy = Barangay.query.filter_by(brgyCode=bride_record.brgy).first()
-  
+    # groom_mother = Parent.query.get(groom_record.mother_id) if groom_record and groom_record.mother_id else None  # Get mother info
+    # groom_father = Parent.query.get(groom_record.father_id) if groom_record and groom_record.father_id else None  # Get father info
+    # bride_mother = Parent.query.get(bride_record.mother_id) if bride_record and bride_record.mother_id else None  # Get mother info
+    # bride_father = Parent.query.get(bride_record.father_id) if bride_record and bride_record.father_id else None  # Get father info
+
     wedding_data = {
         "id": wedding.id,
         "wedding_date": wedding.wedding_date.strftime('%Y-%m-%d'),
@@ -551,6 +609,7 @@ def get_weddings_view(wedd_id):
         "rec_page": wedding.rec_page,
         "rec_line": wedding.rec_line,
 
+        
         "groom": {
             "groom_id": groom_record.id,
             "first_name": groom_record.first_name if groom_record else None,
@@ -582,12 +641,37 @@ def get_weddings_view(wedd_id):
             "brgy": bride_brgy.brgyDesc if bride_brgy else None
         },
 
+        
         "priest": {
             "id": priest.id if priest else None,
             "name": priest.name if priest else None
         },
 
-      
+        #Fetch Related Parents Data
+        # "groom_mother": {
+        #     "id": groom_mother.id if groom_mother else None,
+        #     "first_name": groom_mother.first_name if groom_mother else None,
+        #     "middle_name": groom_mother.middle_name if groom_mother else None,
+        #     "last_name": groom_mother.last_name if groom_mother else None
+        # },
+        # "groom_father": {
+        #     "id": groom_father.id if groom_father else None,
+        #     "first_name": groom_father.first_name if groom_father else None,
+        #     "middle_name": groom_father.middle_name if groom_father else None,
+        #     "last_name": groom_father.last_name if groom_father else None
+        # },
+        # "bride_mother": {
+        #     "id": bride_mother.id if bride_mother else None,
+        #     "first_name": bride_mother.first_name if bride_mother else None,
+        #     "middle_name": bride_mother.middle_name if bride_mother else None,
+        #     "last_name": bride_mother.last_name if bride_mother else None
+        # },
+        # "bride_father": {
+        #     "id": bride_father.id if bride_father else None,
+        #     "first_name": bride_father.first_name if bride_father else None,
+        #     "middle_name": bride_father.middle_name if bride_father else None,
+        #     "last_name": bride_father.last_name if bride_father else None
+        # }
     }
     data.append(wedding_data)
 
@@ -601,18 +685,19 @@ def get_death():
     
     data = []
     for death in deaths:
-        record = Record.query.get(death.record_id) 
-        priest = Priest.query.get(death.priest_id) 
+        record = Record.query.get(death.record_id)  
+        priest = Priest.query.get(death.priest_id)  
         province = Province.query.filter_by(provCode=record.province).first()
         citymun = CityMun.query.filter_by(citymunCode=record.citymun).first()
         brgy = Barangay.query.filter_by(brgyCode=record.brgy).first()
-        mother = Parent.query.get(record.mother_id) if record and record.mother_id else None 
-        father = Parent.query.get(record.father_id) if record and record.father_id else None 
+        mother = Parent.query.get(record.mother_id) if record and record.mother_id else None  
+        father = Parent.query.get(record.father_id) if record and record.father_id else None  
 
         death_data = {
             "id": death.id,
             "death_date": death.death_date.strftime('%Y-%m-%d'),
 
+            
             "record": {
                 "id": record.id if record else None,
                 "first_name": record.first_name if record else None,
@@ -625,11 +710,13 @@ def get_death():
                 "brgy": brgy.brgyDesc if brgy else None
             },
 
+            
             "priest": {
                 "id": priest.id if priest else None,
                 "name": priest.name if priest else None
             },
 
+            
             "mother": {
                 "id": mother.id if mother else None,
                 "first_name": mother.first_name if mother else None,
@@ -654,14 +741,14 @@ def get_deaths_view(death_id):
     death = Death.query.filter_by(id=death_id).first()
 
     data = []
-    record = Record.query.get(death.record_id)
-    priest = Priest.query.get(death.priest_id)
+    record = Record.query.get(death.record_id)  
+    priest = Priest.query.get(death.priest_id)  
     region = Region.query.filter_by(regCode=record.region).first()
     province = Province.query.filter_by(provCode=record.province).first()
     citymun = CityMun.query.filter_by(citymunCode=record.citymun).first()
     brgy = Barangay.query.filter_by(brgyCode=record.brgy).first()
     mother = Parent.query.get(record.mother_id) if record and record.mother_id else None  
-    father = Parent.query.get(record.father_id) if record and record.father_id else None 
+    father = Parent.query.get(record.father_id) if record and record.father_id else None  
 
     death_data = {
         "id": death.id,
@@ -676,6 +763,7 @@ def get_deaths_view(death_id):
         "rec_page": death.rec_page,
         "rec_line": death.rec_line,
 
+        
         "record": {
             "id": record.id if record else None,
             "first_name": record.first_name if record else None,
@@ -691,11 +779,13 @@ def get_deaths_view(death_id):
             "brgy": brgy.brgyDesc if brgy else None
         },
 
+        
         "priest": {
             "id": priest.id if priest else None,
             "name": priest.name if priest else None
         },
 
+        
         "mother": {
             "id": mother.id if mother else None,
             "first_name": mother.first_name if mother else None,
@@ -771,7 +861,7 @@ def get_records_count():
     end_date_str = request.args.get('end')
 
     start_date = datetime.strptime(start_date_str, '%Y-%m-%d')
-    end_date = datetime.strptime(end_date_str, '%Y-%m-%d') + timedelta(days=1) 
+    end_date = datetime.strptime(end_date_str, '%Y-%m-%d') + timedelta(days=1)  
 
     record_count = Record.query.filter(
         Record.date_created.between(start_date, end_date)
@@ -802,6 +892,16 @@ def get_records_count():
         "start_date": start_date,
         "end_date": end_date
     })
+
+def format_ceremony_date(year, month, day):
+    if not year:
+        return ''
+    if not month:
+        return str(year)
+    if not day:
+        return f"{year}-{int(month):02d}"
+    return f"{year}-{int(month):02d}-{int(day):02d}"
+
 
 @api_db.route('/get_report_data')
 def get_report_data():
@@ -847,11 +947,13 @@ def get_report_data():
             date_start = datetime.strptime(filters.get('date_start'), '%Y-%m-%d')
             date_end = datetime.strptime(filters.get('date_end'), '%Y-%m-%d')
 
+            
             query = query.filter(Baptism.baptism_date >= date_start, Baptism.baptism_date <= date_end)
 
         if filters.get('priest'):
             query = query.filter(Baptism.priest.has(id=filters['priest']))
 
+        
         if filters.get('index'):
             query = query.filter(Baptism.rec_index == filters['index'])
         if filters.get('book'):
@@ -881,6 +983,7 @@ def get_report_data():
             date_start = datetime.strptime(filters.get('date_start'), '%Y-%m-%d')
             date_end = datetime.strptime(filters.get('date_end'), '%Y-%m-%d')
 
+            
             query = query.filter(Confirmation.confirmation_date >= date_start, Confirmation.confirmation_date <= date_end)
         if filters.get('priest'):
             query = query.filter(Confirmation.priest.has(id=filters['priest']))
@@ -913,6 +1016,7 @@ def get_report_data():
             date_start = datetime.strptime(filters.get('date_start'), '%Y-%m-%d')
             date_end = datetime.strptime(filters.get('date_end'), '%Y-%m-%d')
 
+            
             query = query.filter(Wedding.wedding_date >= date_start, Wedding.wedding_date <= date_end)
         if filters.get('priest'):
             query = query.filter(Wedding.priest.has(id=filters['priest']))
@@ -947,6 +1051,7 @@ def get_report_data():
             date_start = datetime.strptime(filters.get('date_start'), '%Y-%m-%d')
             date_end = datetime.strptime(filters.get('date_end'), '%Y-%m-%d')
 
+            
             query = query.filter(Death.death_date >= date_start, Death.death_date <= date_end)
         if filters.get('cause'):
             query = query.filter(Death.cause_of_death.ilike(f"%{filters['cause']}%"))
@@ -1001,6 +1106,7 @@ def get_report_data():
             date_start = datetime.strptime(filters.get('date_start'), '%Y-%m-%d')
             date_end = datetime.strptime(filters.get('date_end'), '%Y-%m-%d')
 
+            
             query = query.filter(Request.requested_at >= date_start, Request.requested_at <= date_end)
 
         if filters.get('reqStatus'):
@@ -1016,7 +1122,7 @@ def get_report_data():
             'requestor': f"{req.user.first_name} {req.user.middle_name or ''} {req.user.last_name}".strip(),
             'nameondocument': req.rec_name,
             'ceremonytype': req.ceremony.value,
-            'ceremonydate': req.cer_date,
+            'ceremonydate': format_ceremony_date(req.ceremony_year, req.ceremony_month, req.ceremony_day),
             'status': req.status.value,
             'requestdate': req.requested_at.strftime('%b %d, %Y %I:%M %p') if req.requested_at else '',
             'completiondate': req.processed_at.strftime('%b %d, %Y %I:%M %p') if req.processed_at else '',
@@ -1060,6 +1166,7 @@ def get_schedule():
         category_value = event.category.value
 
         print(f"Formatted Event: {event.title}, Status: {status_value}, Category: {category_value}")
+        
         status_class = ''
         if status_value == 'active':
             status_class = 'active-event'
@@ -1070,6 +1177,7 @@ def get_schedule():
         elif status_value == 'holiday':
             status_class = 'holiday-event'
 
+        
         category_class = ''
         if category_value == 'parish':
             category_class = 'event-parish'
@@ -1080,6 +1188,7 @@ def get_schedule():
         else:
             category_class = 'event-other'
 
+        
         event_data.append({
             'id': event.id,
             'title': event.title,
@@ -1091,7 +1200,7 @@ def get_schedule():
             'className': [status_class, category_class]  
         })
 
-    print(event_data) 
+    print(event_data)  
 
     return jsonify(event_data)
 
@@ -1108,6 +1217,7 @@ def get_requests():
         status_value = request.status.value
         ceremony_value = request.ceremony.value
 
+        
         status_class = ''
         if status_value == 'ready':
             status_class = 'ready-req'
@@ -1123,15 +1233,17 @@ def get_requests():
             status_class = 'processing-req'
         
         category_class = 'event-request'
-        pickup_datetime = datetime.combine(request.pickup_date, datetime.min.time()) 
-        start_datetime = pickup_datetime.replace(hour=8, minute=0, second=0, microsecond=0)
-        end_datetime = pickup_datetime.replace(hour=17, minute=0, second=0, microsecond=0) 
+        
+        pickup_datetime = datetime.combine(request.pickup_date, datetime.min.time())  
+        start_datetime = pickup_datetime.replace(hour=8, minute=0, second=0, microsecond=0)  
+        end_datetime = pickup_datetime.replace(hour=17, minute=0, second=0, microsecond=0)  
 
+        
         request_data.append({
             'id': request.id,
             'requestor': requestor,
             'rec_name': request.rec_name,
-            'cer_date': request.cer_date.isoformat(),
+            'cer_date': format_ceremony_date(request.cer_year, request.cer_month, request.cer_day),
             'relationship': request.relationship,
             'ceremony': ceremony_value,
             'status': status_value,
@@ -1139,16 +1251,67 @@ def get_requests():
             'requested_at': request.requested_at.isoformat(),
             'processed_at': request.processed_at.isoformat() if request.processed_at else 'N/A',
             'pickup_date': request.pickup_date.isoformat(),
-            'start': start_datetime.isoformat(), 
-            'end': end_datetime.isoformat(),     
-            'className': [status_class, category_class] 
+            'start': start_datetime.isoformat(),  
+            'end': end_datetime.isoformat(),      
+            'className': [status_class, category_class]  
         })
 
     print("\nREQUEST DATA:", request_data)  
 
     return jsonify({"data": request_data})
 
-@api_db.route('/get-request-count', methods=['GET'])
+@api_db.route('/request-client')
+def get_ClientRequests():
+
+    requests = Request.query.all()
+    print(str(Request.query.filter_by(user_id=current_user.id)))
+
+    print("Total requests found for current user:", len(requests))
+    print("USER ID: ", current_user.id)
+
+    request_data = []
+    for request in requests:
+        requestor = f"{request.user.first_name} {request.user.last_name}" if request.user else "Unknown"
+        status_value = request.status.value
+        ceremony_value = request.ceremony.value
+
+        
+        status_class = {
+            'ready': 'ready-req',
+            'rejected': 'rejected-req',
+            'cancelled': 'cancelled-req',
+            'completed': 'completed-req',
+            'pending': 'pending-req',
+            'processing': 'processing-req'
+        }.get(status_value, '')
+
+        category_class = 'event-request'
+
+        pickup_datetime = datetime.combine(request.pickup_date, datetime.min.time())
+        start_datetime = pickup_datetime.replace(hour=8, minute=0, second=0)
+        end_datetime = pickup_datetime.replace(hour=17, minute=0, second=0)
+
+        request_data.append({
+            'id': request.id,
+            'requestor': requestor,
+            'rec_name': request.rec_name,
+            'cer_date': format_ceremony_date(request.cer_year, request.cer_month, request.cer_day),
+            'relationship': request.relationship,
+            'ceremony': ceremony_value,
+            'status': status_value,
+            'remarks': request.remarks,
+            'requested_at': request.requested_at.isoformat(),
+            'processed_at': request.processed_at.isoformat() if request.processed_at else 'N/A',
+            'pickup_date': request.pickup_date.isoformat(),
+            'start': start_datetime.isoformat(),
+            'end': end_datetime.isoformat(),
+            'className': [status_class, category_class]
+        })
+
+    return jsonify({"data": request_data})
+
+
+@api_db.route('/get-request/count', methods=['GET'])
 def get_request_count():
     status_counts = (
         db.session.query(Request.status, db.func.count(Request.id))
@@ -1170,7 +1333,7 @@ def get_requests_view(req_id):
         "id": request.id,
         "ceremony": request.ceremony.name,
         "rec_name" : request.rec_name,
-        "cer_date": request.cer_date.strftime('%Y-%m-%d'),
+        "cer_date": format_ceremony_date(request.cer_year, request.cer_month, request.cer_day),
         "relationship" : request.relationship,
         "status": request.status.name,
         "requested_at": request.requested_at.strftime('%Y-%m-%d'),
@@ -1179,6 +1342,7 @@ def get_requests_view(req_id):
         "pickup_date": request.pickup_date.strftime('%Y-%m-%d'),
 
 
+        
         "user": {
             "id": user.id if user else None,
             "first_name": user.first_name if user else None,
@@ -1199,7 +1363,9 @@ def search_record():
     data = request.get_json()
     ceremony = data.get('ceremony', '').lower()
     rec_name = data.get('rec_name', '')
-    cer_date = data.get('cer_date', '')
+    cer_year = data.get('cer_year', '')
+    cer_month = data.get('cer_month', '')
+    cer_day = data.get('cer_day', '')
 
     print("\n\nFINDING RECORD with Data:", data)
 
@@ -1210,10 +1376,13 @@ def search_record():
         'death': Death
     }
 
+    
     Model = model_map.get(ceremony)
     if not Model:
         return jsonify({"found": False}), 400
+        
 
+    
     if ceremony == "baptism":
         ceremony_date_column = Model.baptism_date
     elif ceremony == "confirmation":
@@ -1225,16 +1394,28 @@ def search_record():
     else:
         return jsonify({"found": False, "error": "Invalid ceremony type"}), 400
 
+    
+
+    
+    query = db.session.query(Model)
+
+    
+    if cer_year.strip():
+        query = query.filter(extract('year', ceremony_date_column) == int(cer_year))
+    if cer_month.strip():
+        query = query.filter(extract('month', ceremony_date_column) == int(cer_month))
+    if cer_day.strip():
+        query = query.filter(extract('day', ceremony_date_column) == int(cer_day))
 
 
-    records = Model.query.filter(
-        ceremony_date_column == cer_date
-    ).all()
+    
+    records = query.all()
 
-    print("Records that match Date:", records)
-
+    
+    
     name_parts = rec_name.split()
-    full_name = " ".join(name_parts)
+    full_name = " ".join(name_parts)  
+    ceremony_date = f"{cer_year}-{cer_month.zfill(2) if cer_month else '??'}-{cer_day.zfill(2) if cer_day else '??'}"
 
     matched_records = []
     for record in records:
@@ -1267,6 +1448,7 @@ def search_record():
                     "matched_name": record_full_name
                 })
     if matched_records:
+        
         if len(matched_records) > 1:
             return jsonify({
                 "found": True,
@@ -1274,17 +1456,18 @@ def search_record():
                     "name": match["matched_name"],
                     "id": match["record"].id,
                     "ceremony": ceremony,
-                    "ceremony_date": cer_date
+                    "ceremony_date": ceremony_date
                 } for match in matched_records]
             })
         else:
+            
             return jsonify({
                 "found": True,
                 "matches": [{
                     "name": match["matched_name"],
                     "id": match["record"].id,
                     "ceremony": ceremony,
-                    "ceremony_date": cer_date
+                    "ceremony_date": ceremony_date
                 } for match in matched_records]
             })
     else:
@@ -1313,7 +1496,96 @@ def get_accounts():
 
     return jsonify({"data": data})
 
+@api_db.route('/audit-logs', methods=['GET'])
+def get_audits():
+    logs = AuditLog.query.all()
+
+    data = []
+    for log in logs:
+        log_data = {
+            "changed_at": log.changed_at.strftime('%Y-%m-%d %H:%M:%S'),
+            "action": log.action,
+            "table_name": log.table_name,
+            "record_id": log.record_id or "N/A",
+            "changed_by": log.changed_by,
+            "changed_by_info": log.changed_by_info,
+            "old_data": log.old_data,
+            "new_data": log.new_data,
+        }
+        data.append(log_data)
+    
+    print(f"Data: {data}")
+
+    return jsonify({"data": data})
 
 
+def get_serializer():
+    return URLSafeTimedSerializer(current_app.secret_key)
 
+@api_db.route('/request-password-reset', methods=['POST'])
+def reset_pass_req():
+    try:
+        data = request.get_json()
+        email = data.get('email')
 
+        if not email:
+            return jsonify({"message": "Email is required"}), 400
+
+        user = User.query.filter_by(email=email).first()
+        if not user:
+            return jsonify({"message": "No account found with this email"}), 404
+
+        serializer = get_serializer()
+        reset_token = serializer.dumps(user.id, salt='password-reset-salt')
+
+        reset_link = url_for('api_db.reset_password', token=reset_token, _external=True)
+
+        msg = Message(
+            subject="Password Reset",
+            recipients=[email],
+            body=f"Reset your password using this link (valid for 1 hour): {reset_link}"
+        )
+        mail.send(msg)
+
+        return jsonify({"message": "Reset email sent."}), 200
+
+    except Exception as e:
+        print("Error:", e)
+        return jsonify({"message": "Error sending email"}), 500
+    
+@api_db.route('/reset-password', methods=['GET', 'POST'])
+def reset_password():
+    token = request.args.get('token') if request.method == 'GET' else request.form.get('token')
+    serializer = get_serializer()
+
+    try:
+        user_id = serializer.loads(token, salt='password-reset-salt', max_age=3600)
+    except SignatureExpired:
+        return "The reset link has expired.", 400
+    except BadSignature:
+        return "Invalid reset token.", 400
+
+    user = User.query.get(user_id)
+    if not user:
+        return "User not found.", 404
+
+    if request.method == 'POST':
+        try:
+            new_password = request.form.get('password')
+            confirm_password = request.form.get('confirm_password')
+
+            if new_password != confirm_password:
+                return "Passwords do not match.", 400
+
+            user.password = generate_password_hash(new_password)
+            db.session.commit()
+
+            flash("Password updated successfully. You can now log in.", "success")
+            return redirect('/login')  
+        except Exception as e:
+            db.session.rollback()
+            print("ERROR OCCURRED:", str(e))  
+            traceback.print_exc()
+            return jsonify({"error": str(e)}), 500 
+
+    return render_template('reset_password.html', token=token)

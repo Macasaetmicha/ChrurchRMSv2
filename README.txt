@@ -11,6 +11,8 @@ fido2
 cachetools
 
 rapidfuzz
+Flask-Mail
+
 
 #For Migrations
 $env:FLASK_APP = "main.py"

@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, abort, flash, redirect, url_for, jsonify
 from flask_login import login_required, current_user
-from ..models import db, User, UserRole
+from ..models import db, User, UserRole, AuditLog
 from .api_db import get_records_count
 
 admin = Blueprint('admin', __name__)
@@ -81,19 +81,19 @@ def report():
     
     return render_template("reports.html", active_page='report', user=current_user, UserRole=UserRole)
 
-@admin.route('/history')
+@admin.route('/audit-log')
 @login_required
-def history():
-    if current_user.role not in [UserRole.ADMIN, UserRole.STAFF]:
+def audit_log():
+    if current_user.role not in [UserRole.ADMIN]:
         flash('You do not have the credential to access this page.', category='warning')
         return redirect(url_for('views.home'))
-    
-    return render_template("history.html", active_page='history', user=current_user, UserRole=UserRole)
+    logs = AuditLog.query.order_by(AuditLog.changed_at.desc()).all()
+    return render_template("audit.html", active_page='audit', logs=logs, user=current_user, UserRole=UserRole)
 
 @admin.route('/accounts')
 @login_required
 def accounts():
-    if current_user.role not in [UserRole.ADMIN, UserRole.STAFF]:
+    if current_user.role not in [UserRole.ADMIN]:
         flash('You do not have the credential to access this page.', category='warning')
         return redirect(url_for('views.home'))
     

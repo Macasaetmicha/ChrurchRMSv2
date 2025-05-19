@@ -41,9 +41,11 @@ def login_fido():
     """This route returns the HTML for the fido-login page. This page can only be accessed if the user has a valid
     fido-session."""
 
+    
     if flask_login.current_user.is_authenticated:
         return redirect("/home")
 
+    
     user_id = get_user_id()
     print('USER ID CHECK2')
     print(user_id)
@@ -109,8 +111,10 @@ def signupUser():
                 "type": "warning"
             }), 409
 
+        
         temp_id = str(uuid.uuid4())
 
+        
         session[f"temp_user_{temp_id}"] = {
             "username": username,
             "first_name": first_name,
@@ -128,7 +132,7 @@ def signupUser():
             "status": "ok",
             "type":"info",
             "message": "Account data received. Proceed with authentication.",
-            "temp_id": temp_id 
+            "temp_id": temp_id  
         })
     except Exception as e:
         db.session.rollback()
@@ -139,6 +143,17 @@ def signupUser():
             "details": str(e),
             "type": "error"
         }), 500
+
+
+
+
+
+
+
+
+
+
+
 
 from sqlalchemy import and_
 
@@ -190,8 +205,10 @@ def submit_account():
                 "type": "warning"
             }), 409
 
+        
         temp_id = str(uuid.uuid4())
 
+        
         session[f"temp_user_{temp_id}"] = {
             "username": username,
             "first_name": first_name,
@@ -203,14 +220,32 @@ def submit_account():
             "role": UserRole.STAFF.value
         }
 
-    
+        # new_user = User(
+        #     username=username,
+        #     first_name=first_name,
+        #     middle_name=middle_name,
+        #     last_name=last_name,
+        #     contact_number=contact_number,
+        #     email=email,
+        #     password=hashed_password,
+        #     role=UserRole.STAFF
+        # )
+
+        # db.session.add(new_user)
+        # db.session.commit()
+
         return jsonify({
             "status": "ok",
             "type":"info",
             "message": "Account data received. Proceed with authentication.",
-            "temp_id": temp_id 
+            "temp_id": temp_id  
         })
 
+        # return jsonify({
+        #     "message": "Proceed to authentication",
+        #     "user_id": new_user.id,
+        #     "type": "success"
+        # }), 200
 
     except Exception as e:
         db.session.rollback()
@@ -222,7 +257,6 @@ def submit_account():
             "type": "error"
         }), 500
 
-
 @auth.route("/edit-account/<int:user_id>", methods=["PUT"])
 def edit_account(user_id):
     try:
@@ -233,12 +267,14 @@ def edit_account(user_id):
         if not user:
             return jsonify({"message": "User not found.", "type": "error"}), 404
 
+        
         fname = data.get("fname", user.first_name)
         mname = data.get("mname", user.middle_name or "")
         lname = data.get("lname", user.last_name)
         username = data.get("username", user.username)
         email = data.get("email", user.email)
 
+        
         duplicate_name = User.query.filter(
             User.first_name == fname,
             User.middle_name == mname,
@@ -251,16 +287,19 @@ def edit_account(user_id):
                 "type": "error"
             }), 400
 
+        
         if 'username' in data:
             existing_user = User.query.filter(User.username == username, User.id != user_id).first()
             if existing_user:
                 return jsonify({"message": "Username already taken.", "type": "error"}), 400
 
+        
         if 'email' in data:
             existing_email = User.query.filter(User.email == email, User.id != user_id).first()
             if existing_email:
                 return jsonify({"message": "Email already in use.", "type": "error"}), 400
 
+        
         user.first_name = fname
         user.middle_name = mname
         user.last_name = lname
@@ -282,7 +321,6 @@ def edit_account(user_id):
             "message": f"An error occurred: {str(e)}",
             "type": "error"
         }), 500
-
 
 
 @auth.route('/logout')

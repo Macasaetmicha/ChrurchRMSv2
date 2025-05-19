@@ -5,10 +5,13 @@ $(document).ready(function() {
         "bishop": "Bishop"
     };
     
+    
     $(document).on('click', '.find-btn-rec', function() {
+        
         const recordId = $(this).data('id');
         console.log('Record ID:', recordId);
 
+        
         fetch(`/api_db/record/view/${recordId}`)
             .then(res => res.json())
             .then(data => {
@@ -26,20 +29,24 @@ $(document).ready(function() {
                     $('#recClientProv').text(recordData.province.desc);
                     $('#recClientReg').text(recordData.region.desc);
                     
+                    
                     $('#recMoName').text(`${recordData.mother?.first_name || 'N/A'} ${recordData.mother?.middle_name || ''} ${recordData.mother?.last_name || ''}`);
                     $('#recMoBday').text(formatDateToLong(recordData.mother?.birthday) || 'N/A');
                     $('#recMoBplace').text(recordData.mother?.birthplace || 'N/A');
                     $('#recMoAddress').text(recordData.mother?.address || 'N/A');
+                    
                     
                     $('#recFaName').text(`${recordData.father?.first_name || 'N/A'} ${recordData.father?.middle_name || ''} ${recordData.father?.last_name || ''}`);
                     $('#recFaBday').text(formatDateToLong(recordData.father?.birthday) || 'N/A');
                     $('#recFaBplace').text(recordData.father?.birthplace || 'N/A');
                     $('#recFaAddress').text(recordData.father?.address || 'N/A');
                     
+                    
                     $('#baptIndex').text(recordData.ceremonies.baptism?.index || '-');
                     $('#baptBook').text(recordData.ceremonies.baptism?.book || '-');
                     $('#baptPage').text(recordData.ceremonies.baptism?.page || '-');
                     $('#baptLine').text(recordData.ceremonies.baptism?.line || '-');
+                    
                     
                     $('#confIndex').text(recordData.ceremonies.confirmation?.index || '-');
                     $('#confBook').text(recordData.ceremonies.confirmation?.book || '-');
@@ -53,6 +60,7 @@ $(document).ready(function() {
                     $('#wedPage').text(weddingData?.groom?.page || weddingData?.bride?.page || '-');
                     $('#wedLine').text(weddingData?.groom?.line || weddingData?.bride?.line || '-');
 
+                    
                     
                     $('#deathIndex').text(recordData.ceremonies.death?.index || '-');
                     $('#deathBook').text(recordData.ceremonies.death?.book || '-');
@@ -68,9 +76,11 @@ $(document).ready(function() {
     });
 
     $(document).on('click', '.find-btn-bapt', function() {
+        
         const baptismId = $(this).data('id');
         console.log('Baptism ID:', baptismId);
 
+        
         fetch(`/api_db/baptism/view/${baptismId}`)
             .then(res => res.json())
             .then(data => {
@@ -89,6 +99,7 @@ $(document).ready(function() {
                     $('#baptClientReg').text(baptismData.record.region);
                     console.log(baptismData)
                     
+                    
                     $('#baptDate').text(formatDateToLong(baptismData.baptism_date));
                     $('#baptPriest').text(baptismData.priest.name);
                     $('#baptSponsA').text(baptismData.sponsorA);
@@ -96,6 +107,7 @@ $(document).ready(function() {
                     $('#baptSponsB').text(baptismData.sponsorB);
                     $('#baptSponsResB').text(baptismData.residenceB);
     
+                    
                     $('#baptIndex').text(baptismData.rec_index || 'N/A');
                     $('#baptBook').text(baptismData.rec_book || 'N/A');
                     $('#baptPage').text(baptismData.rec_page || 'N/A');
@@ -110,9 +122,11 @@ $(document).ready(function() {
     });
 
     $(document).on('click', '.find-btn-conf', function() {
+        
         const confirmationId = $(this).data('id');
         console.log('Confirmation ID:', confirmationId);
 
+        
         fetch(`/api_db/confirmation/view/${confirmationId}`)
             .then(res => res.json())
             .then(data => {
@@ -133,11 +147,13 @@ $(document).ready(function() {
 
                     $('#confBaptChurch').text(confirmationData.church_baptized);
                     
+                    
                     $('#confDate').text(formatDateToLong(confirmationData.confirmation_date));
                     $('#confPriest').text(confirmationData.priest.name);
                     $('#confSponsA').text(confirmationData.sponsorA);
                     $('#confSponsB').text(confirmationData.sponsorB);
                 
+                    
                     $('#confIndex').text(confirmationData.rec_index || 'N/A');
                     $('#confBook').text(confirmationData.rec_book || 'N/A');
                     $('#confPage').text(confirmationData.rec_page || 'N/A');
@@ -152,9 +168,11 @@ $(document).ready(function() {
     });
 
     $(document).on('click', '.find-btn-wedd', function() {
+        
         const weddingId = $(this).data('id');
         console.log('Wedding ID:', weddingId);
 
+        
         fetch(`/api_db/wedding/view/${weddingId}`)
             .then(res => res.json())
             .then(data => {
@@ -182,6 +200,7 @@ $(document).ready(function() {
                     $('#weddBrideClientProv').text(weddingData.bride.province);
                     $('#weddBrideClientReg').text(weddingData.bride.region);
                     
+                    
                     $('#weddDate').text(formatDateToLong(weddingData.wedding_date));
                     $('#weddPriest').text(weddingData.priest.name);
                     $('#weddSponsA').text(weddingData.sponsorA);
@@ -190,6 +209,7 @@ $(document).ready(function() {
                     $('#civilDate').text(formatDateToLong(weddingData.civil_date));
                     $('#civilPlace').text(weddingData.civil_place);
                  
+                    
                     $('#weddIndex').text(weddingData.rec_index || 'N/A');
                     $('#weddBook').text(weddingData.rec_book || 'N/A');
                     $('#weddPage').text(weddingData.rec_page || 'N/A');
@@ -204,9 +224,11 @@ $(document).ready(function() {
     });
 
     $(document).on('click', '.find-btn-death', function() {
+        
         const deathId = $(this).data('id');
         console.log('Death ID:', deathId);
 
+        
         fetch(`/api_db/death/view/${deathId}`)
             .then(res => res.json())
             .then(data => {
@@ -226,6 +248,7 @@ $(document).ready(function() {
                     $('#deathClientReg').text(deathData.record.region);
                     console.log(deathData)
                     
+                    
                     $('#deathDate').text(formatDateToLong(deathData.death_date));
                     $('#deathPriest').text(deathData.priest.name);
                     $('#burialDate').text(formatDateToLong(deathData.burial_date));
@@ -234,6 +257,7 @@ $(document).ready(function() {
                     $('#deathCause').text(deathData.cause_of_death);
                     $('#burialPlace').text(deathData.burial_place);
 
+                    
                     $('#deathIndex').text(deathData.rec_index || 'N/A');
                     $('#deathBook').text(deathData.rec_book || 'N/A');
                     $('#deathPage').text(deathData.rec_page || 'N/A');
@@ -248,9 +272,11 @@ $(document).ready(function() {
     });
 
     $(document).on('click', '.find-btn-priest', function() {
+        
         const priestId = $(this).data('id');
         console.log('Priest ID:', priestId);
 
+        
         fetch(`/api_db/priest/view/${priestId}`)
             .then(res => res.json())
             .then(data => {
@@ -275,9 +301,11 @@ $(document).ready(function() {
     });
 
     $(document).on('click', '.find-btn-request', function() {
+        
         const requestId = $(this).data('id');
         console.log('Reuest ID:', requestId);
 
+        
         fetch(`/api_db/request/view/${requestId}`)
             .then(res => res.json())
             .then(data => {
@@ -292,7 +320,7 @@ $(document).ready(function() {
                     $('#rec_name').text(toTitleCase(reqData.rec_name || 'N/A'));
                     $('#relationship').text(toTitleCase(reqData.relationship));
                     $('#ceremony').text(toTitleCase(reqData.ceremony));
-                    $('#cer_date').text(formatDateToLong(reqData.cer_date));
+                    $('#cer_date').text(formatDatePartsToLong(reqData.cer_year, reqData.cer_month, reqData.cer_day));
                     $('#status').text(toTitleCase(reqData.status));
                     $('#pickup_date').text(formatDateToLong(reqData.pickup_date));
                     $('#remarks').text(reqData.remarks || 'N/A');
@@ -311,4 +339,26 @@ $(document).ready(function() {
 
 function toTitleCase(str) {
     return str?.toLowerCase().replace(/\b\w/g, char => char.toUpperCase()) || 'N/A';
+}
+
+function formatDatePartsToLong(year, month, day) {
+    if (!year) return 'Unknown Date';
+
+    const parts = [];
+
+    
+    if (month) {
+        const monthName = new Date(year, month - 1).toLocaleString('en-US', { month: 'long' });
+        parts.push(monthName);
+    }
+
+    
+    if (day) {
+        parts.push(day);
+    }
+
+    
+    parts.push(year);
+
+    return parts.join(' ');
 }

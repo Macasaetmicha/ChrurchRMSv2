@@ -5,6 +5,7 @@ import {
 } from './webauthn-json.browser-ponyfill.js';
 
 const authenticateButton = document.getElementById("authenticate-button");
+const buttonDiv = document.getElementById("button-div");
 
 authenticateButton.onclick = onAuthenticateButtonClicked;
 
@@ -18,6 +19,7 @@ function displayFailure() {
 function displayInProgress() {
     fidoLayout.displayInProgress();
     authenticateButton.classList.add("d-none");
+    buttonDiv.style.display = "none";
 }
 
 async function onAuthenticateButtonClicked() {

@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", function () {
-    // STEPPER JS 
+    
     document.querySelectorAll(".modal").forEach(modal => {
         let currentStep = 0; 
 
@@ -47,7 +47,7 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     });
 
-    // MODAL JS
+    
     $("#addBaptismBtn").on("click", function () {
 
         $("#addBaptismModal input:not([type='radio']), #addBaptismModal select, #addBaptismModal textarea")
@@ -160,13 +160,13 @@ document.addEventListener("DOMContentLoaded", function () {
 
     });
     
-    // DROPDOWN JS
+    
     const regionSelect = document.getElementById("region");
     const provinceSelect = document.getElementById("province");
     const citySelect = document.getElementById("city");
     const barangaySelect = document.getElementById("barangay");
 
-    // Fetch Regions
+    
     if (regionSelect) {
         fetch("/api_db/get-regions")
         .then(response => response.json())
@@ -181,7 +181,7 @@ document.addEventListener("DOMContentLoaded", function () {
         .catch(error => console.error("Error loading regions:", error));
     
 
-        // Fetch Provinces based on Selected Region
+        
         regionSelect.addEventListener("change", function () {
             provinceSelect.innerHTML = '<option value="" selected disabled>Select Province</option>';
             citySelect.innerHTML = '<option value="" selected disabled>Select City/Municipality</option>';
@@ -200,7 +200,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 .catch(error => console.error("Error loading provinces:", error));
         });
 
-        // Fetch Cities based on Selected Province
+        
         provinceSelect.addEventListener("change", function () {
             citySelect.innerHTML = '<option value="" selected disabled>Select City/Municipality</option>';
             barangaySelect.innerHTML = '<option value="" selected disabled>Select Barangay</option>';
@@ -218,7 +218,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 .catch(error => console.error("Error loading cities:", error));
         });
 
-        // Fetch Barangays based on Selected City/Municipality
+        
         citySelect.addEventListener("change", function () {
             barangaySelect.innerHTML = '<option value="" selected disabled>Select Barangay</option>';
 
@@ -241,7 +241,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const GroomCitySelect = document.getElementById("GroomCity");
     const GroomBarangaySelect = document.getElementById("GroomBarangay");
 
-    // Fetch Regions
+    
     if (GroomRegionSelect) {
         fetch("/api_db/get-regions")
         .then(response => response.json())
@@ -256,7 +256,7 @@ document.addEventListener("DOMContentLoaded", function () {
         .catch(error => console.error("Error loading regions:", error));
     
 
-        // Fetch Provinces based on Selected Region
+        
         GroomRegionSelect.addEventListener("change", function () {
             GroomProvinceSelect.innerHTML = '<option value="" selected disabled>Select Province</option>';
             GroomCitySelect.innerHTML = '<option value="" selected disabled>Select City/Municipality</option>';
@@ -275,7 +275,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 .catch(error => console.error("Error loading provinces:", error));
         });
 
-        // Fetch Cities based on Selected Province
+        
         GroomProvinceSelect.addEventListener("change", function () {
             GroomCitySelect.innerHTML = '<option value="" selected disabled>Select City/Municipality</option>';
             GroomBarangaySelect.innerHTML = '<option value="" selected disabled>Select Barangay</option>';
@@ -293,7 +293,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 .catch(error => console.error("Error loading cities:", error));
         });
 
-        // Fetch Barangays based on Selected City/Municipality
+        
         GroomCitySelect.addEventListener("change", function () {
             GroomBarangaySelect.innerHTML = '<option value="" selected disabled>Select Barangay</option>';
 
@@ -316,7 +316,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const BrideCitySelect = document.getElementById("BrideCity");
     const BrideBarangaySelect = document.getElementById("BrideBarangay");
 
-    // Fetch Regions
+    
     if (BrideRegionSelect) {
         fetch("/api_db/get-regions")
         .then(response => response.json())
@@ -331,7 +331,7 @@ document.addEventListener("DOMContentLoaded", function () {
         .catch(error => console.error("Error loading regions:", error));
     
 
-        // Fetch Provinces based on Selected Region
+        
         BrideRegionSelect.addEventListener("change", function () {
             BrideProvinceSelect.innerHTML = '<option value="" selected disabled>Select Province</option>';
             BrideCitySelect.innerHTML = '<option value="" selected disabled>Select City/Municipality</option>';
@@ -350,7 +350,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 .catch(error => console.error("Error loading provinces:", error));
         });
 
-        // Fetch Cities based on Selected Province
+        
         BrideProvinceSelect.addEventListener("change", function () {
             BrideCitySelect.innerHTML = '<option value="" selected disabled>Select City/Municipality</option>';
             BrideBarangaySelect.innerHTML = '<option value="" selected disabled>Select Barangay</option>';
@@ -368,7 +368,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 .catch(error => console.error("Error loading cities:", error));
         });
 
-        // Fetch Barangays based on Selected City/Municipality
+        
         BrideCitySelect.addEventListener("change", function () {
             BrideBarangaySelect.innerHTML = '<option value="" selected disabled>Select Barangay</option>';
 
@@ -390,7 +390,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const priestSelectEdit = document.getElementById("priestEdit");
 
     if (priestSelect){
-        // Fetch Priest
+        
         fetch("/api_db/get-priests")
         .then(response => response.json())
         .then(data => {
@@ -406,6 +406,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     if (priestSelectEdit){
+        
         fetch("/api_db/get-priests")
         .then(response => response.json())
         .then(data => {
@@ -421,7 +422,7 @@ document.addEventListener("DOMContentLoaded", function () {
         .catch(error => console.error("Error loading priests:", error));
     }
     
-    // DATE PICKER JS
+    
     if ($('.datepicker-custom').length > 0) {
         $('.datepicker-custom').datepicker({
             format: 'yyyy-mm-dd', 
@@ -493,7 +494,7 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    // SELECT2
+    
     $(document).ready(function() {
         $('.select2').select2({
             placeholder: "Select options",

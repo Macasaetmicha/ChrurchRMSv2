@@ -51,7 +51,6 @@
     color: var(--text-color) !important;
 }
 
-/* Style the Wednesday-Friday cells */
 .fc-day.fc-day-wed, 
 .fc-day.fc-day-thu, 
 .fc-day.fc-day-fri {
@@ -63,8 +62,8 @@
 }
 
 .fc-day-today {
-    background-color: #bcd5c596 !important; 
-    color: white !important; 
+    background-color: #bcd5c596 !important;
+    color: white !important;
     border: 2px solid #bcd5c5 !important;
 }
 
@@ -74,7 +73,7 @@
 }
 
 .fc-event.active-event, .active-event, .completed-req {
-    background-color: rgba(40, 167, 69, 0.3); 
+    background-color: rgba(40, 167, 69, 0.3);
     color: var(--text-color) !important;
 }
 
@@ -158,3 +157,6 @@
     display: block; 
 }
 
+.card-req-form{
+    margin: 0 2rem 2rem 2rem;
+}

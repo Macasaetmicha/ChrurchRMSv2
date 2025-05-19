@@ -12,7 +12,7 @@ document.addEventListener('click', function(e) {
 });
 
 function handleEdit(category, id) {
-    let url, formSelector, modalSelector, fieldMap = null; 
+    let url, formSelector, modalSelector, fieldMap = null;  
 
     switch (category) {
         case 'priest':
@@ -448,6 +448,7 @@ $(document).ready(function () {
         let isValid = true; 
         let missingFields = []; 
     
+        
         $(this).find("[required]").each(function () {
             let value = $(this).val();
             
@@ -506,6 +507,7 @@ $(document).ready(function () {
         let isValid = true; 
         let missingFields = []; 
     
+        
         $(this).find("[required]").each(function () {
             let value = $(this).val();
             
@@ -518,17 +520,20 @@ $(document).ready(function () {
             }
         });
         
+        
         if (!isValid) {
             event.preventDefault(); 
             toastr.warning("Please fill in the required fields: " + missingFields.join(", "));
             return false;
         }
     
+        
         let formData = $(this).serialize();
         console.log("Data being sent:", formData); 
 
         const weddingId = $("#id").val();
     
+        
         $.ajax({
             type: "PUT",
             url: `/edit-wedding/${weddingId}`, 
@@ -564,6 +569,7 @@ $(document).ready(function () {
         let isValid = true; 
         let missingFields = []; 
     
+        
         $(this).find("[required]").each(function () {
             let value = $(this).val();
             
@@ -576,17 +582,20 @@ $(document).ready(function () {
             }
         });
         
+        
         if (!isValid) {
             event.preventDefault(); 
             toastr.warning("Please fill in the required fields: " + missingFields.join(", "));
             return false;
         }
     
+        
         let formData = $(this).serialize();
         console.log("Data being sent:", formData); 
 
         const deathId = $("#id").val();
     
+        
         $.ajax({
             type: "PUT",
             url: `/edit-death/${deathId}`, 

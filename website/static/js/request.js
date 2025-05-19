@@ -3,9 +3,9 @@ let calendar;
 document.addEventListener('DOMContentLoaded', function () {
     const calendarEl = document.getElementById('calendar');
     const dateDisplay = document.getElementById('current-date');
-    const eventModal = new bootstrap.Modal(document.getElementById('addEventModal')); 
-    const eventForm = document.getElementById('eventAddForm'); 
-    const eventFormEdit = document.getElementById('eventEditForm'); 
+    const eventModal = new bootstrap.Modal(document.getElementById('addEventModal')); // Initialize the modal
+    const eventForm = document.getElementById('eventAddForm'); // Reference to the form
+    const eventFormEdit = document.getElementById('eventEditForm'); // Reference to the form
 
     if (!calendarEl) {
         console.error('Element with ID "calendar" not found.');
@@ -27,7 +27,8 @@ document.addEventListener('DOMContentLoaded', function () {
             method: 'GET',
             failure: () => toastr.error("Failed to load request events"),
             success: function(data) {
-                return data.data; 
+                console.log("GOT DATA FOR CALNEDAR:", data)
+                return data.data; // Access the 'data' property and return the events
             }
         }
         ],
@@ -58,10 +59,12 @@ document.addEventListener('DOMContentLoaded', function () {
                 const start = new Date(event.start);
                 let end = new Date(event.end || event.start);
 
+                // If all-day event and end has time 00:00, subtract 1 day for accurate range
                 if (event.allDay && end.getHours() === 0 && end.getMinutes() === 0) {
                     end.setDate(end.getDate() - 1);
                 }
 
+                // Normalize times for comparison
                 start.setHours(0, 0, 0, 0);
                 end.setHours(0, 0, 0, 0);
 
@@ -75,6 +78,7 @@ document.addEventListener('DOMContentLoaded', function () {
             detailCell.colSpan = 7;
 
             if (eventsForDate.length > 0) {
+                // Group events
                 const parishEvents = eventsForDate.filter(ev => {
                     return !ev.classNames.includes("event-request") && !ev.classNames.includes("event-holiday");
                 });
@@ -87,6 +91,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 const formatDateTime = (date) => `${formatDate(date)} (${formatTime(date)})`;
 
+                // Format Parish Events
                 let parishItems = '';
                 if (parishEvents.length > 0) {
                     const sortedParishEvents = parishEvents.sort((a, b) => a.start - b.start);
@@ -120,12 +125,15 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
 
 
+                // Function to convert a string to title case
                 const toTitleCase = str => str.replace(/\w\S*/g, word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase());
 
+                // Format Document Requests
                 let requestItems = '';
                 if (requestEvents.length > 0) {
+                    // Group the request events by status
                     const groupedRequests = requestEvents.reduce((groups, ev) => {
-                        const status = ev.extendedProps.status || 'Unknown'; 
+                        const status = ev.extendedProps.status || 'Unknown';  // Group by status
                         if (!groups[status]) {
                             groups[status] = [];
                         }
@@ -133,6 +141,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         return groups;
                     }, {});
 
+                    // Create HTML for each group
                     for (let status in groupedRequests) {
                         const requests = groupedRequests[status];
                         
@@ -155,6 +164,7 @@ document.addEventListener('DOMContentLoaded', function () {
                                 </li>`;
                         }).join('');
 
+                        // Append the status heading in title case and the request items for that status
                         requestItems += `
                             <em>${toTitleCase(status)}</em>
                             <ul>
@@ -164,6 +174,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
 
 
+
+                // Format Holidays
                 let holidayItems = '';
                 if (holidayEvents.length > 0) {
                     holidayItems = holidayEvents.map(ev => {
@@ -203,6 +215,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
 
 
+                // Build the final display
                 detailCell.innerHTML = holidaySection + scheduleSection + requestSection;
             } else {
                 detailCell.innerHTML = `<em>No schedules for ${new Date(clickedDate).toDateString()}</em>`;
@@ -224,21 +237,21 @@ document.addEventListener('DOMContentLoaded', function () {
         },
 
         dayCellDidMount: function(info) {
-            const day = info.date.getDay();
+            const day = info.date.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
 
-            if (day >= 3 && day <= 5) {
+            if (day >= 3 && day <= 5) { // Wednesday to Friday
                 info.el.classList.add('highlight-wed-fri');
             }
         },
 
         eventDidMount: function(info) {
             if (info.event.classNames.includes('event-request')) {
-                return;
+                return; // Prevent double-click from working
             }
             info.el.addEventListener('dblclick', function() {
                 const event = info.event;
 
-               
+                // Store for editing later
                 currentEvent = event;
 
                 function toInputFormat(date) {
@@ -259,6 +272,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 console.log(toInputFormat(event.start))
 
 
+                // Fill the modal with event data
                 console.log("Data Passed: ", event)
                 document.getElementById('schedId').value = event.id;
                 document.getElementById('eventTitleEdit').value = event.title;
@@ -268,6 +282,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 document.getElementById('eventCategoryEdit').value = event.extendedProps.category;
                 document.getElementById('eventStatusEdit').value = event.extendedProps.status;
 
+                // Show the edit modal
                 new bootstrap.Modal(document.getElementById('editEventModal')).show();
             });
         }
@@ -276,6 +291,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     calendar.render();
 
+    // Previous/Next buttons event listeners
     document.getElementById('prevBtn').addEventListener('click', () => {
         calendar.prev();
         openDetailDate = null;
@@ -288,8 +304,9 @@ document.addEventListener('DOMContentLoaded', function () {
         document.querySelectorAll('.fc-custom-detail-row').forEach(el => el.remove());
     });
 
+    // New "Go to Current Month" button event listener
     document.getElementById('currentMonthBtn').addEventListener('click', () => {
-        calendar.today(); 
+        calendar.today(); // This will take the calendar to the current month
         openDetailDate = null;
         document.querySelectorAll('.fc-custom-detail-row').forEach(el => el.remove());
     });
@@ -299,9 +316,71 @@ document.addEventListener('DOMContentLoaded', function () {
         return new Date(date).toLocaleTimeString([], options);
     }
 
+    // // POPOVER JS
+    // const filterButton = document.getElementById('requestPopover');
+    // const requestContent = document.getElementById('requestContent').innerHTML;
+
+    // const popover = new bootstrap.Popover(filterButton, {
+    //     content: requestContent,
+    //     html: true,
+    //     sanitize: false,
+    //     trigger: 'manual'
+    // });
+
+    // let selectedStart = moment().subtract(29, 'days');
+    // let selectedEnd = moment();
+
+    // function cb(start, end) {
+    //     selectedStart = start;
+    //     selectedEnd = end;
+    //     $('#requestrange span').html(start.format('MMMM D, YYYY') + ' - ' + end.format('MMMM D, YYYY'));
+    //     fetchRecordCount(start.format('YYYY-MM-DD'), end.format('YYYY-MM-DD'));
+    // }
+
+    // // Add manual toggle on button click
+    // filterButton.addEventListener('click', function () {
+    //     const popoverId = filterButton.getAttribute('aria-describedby');
+    //     if (popoverId) {
+    //         popover.hide();
+    //     } else {
+    //         popover.show();
+    //     }
+    // });
+
+    // filterButton.addEventListener('shown.bs.popover', function () {
+    //     const $popoverBody = $('.popover-body');
+
+    //     $popoverBody.find('#requestrange').daterangepicker({
+    //         startDate: selectedStart,
+    //         endDate: selectedEnd,
+    //         ranges: {
+    //             'Today': [moment(), moment()],
+    //             'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+    //             'Last 7 Days': [moment().subtract(6, 'days'), moment()],
+    //             'Last 30 Days': [moment().subtract(29, 'days'), moment()],
+    //             'This Month': [moment().startOf('month'), moment().endOf('month')],
+    //             'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
+    //         }
+    //     }, cb);
+
+    //     cb(selectedStart, selectedEnd);
+    // });
+
+    // document.addEventListener('click', function (event) {
+    //     const popoverId = filterButton.getAttribute('aria-describedby');
+    //     const popoverElement = popoverId ? document.getElementById(popoverId) : null;
+    //     const isInPopover = popoverElement && popoverElement.contains(event.target);
+    //     const isInButton = filterButton.contains(event.target);
+    //     const isInDatepicker = $(event.target).closest('.daterangepicker').length > 0;
+
+    //     if (!isInPopover && !isInButton && !isInDatepicker) {
+    //         popover.hide();
+    //     }
+    // });
+
     function fetchRequestCount(startDate, endDate) {
         $.ajax({
-            url: `/api_db/get-request-count?start=${startDate}&end=${endDate}`,
+            url: `/api_db/get-request/count?start=${startDate}&end=${endDate}`,
             type: "GET",
             success: function (data) {
                 $(".reviewCount").text(data.pending || 0);
@@ -321,10 +400,12 @@ document.addEventListener('DOMContentLoaded', function () {
     const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
     const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
 
-    const startDate = startOfMonth.toISOString().split('T')[0];
+    const startDate = startOfMonth.toISOString().split('T')[0]; // Format: YYYY-MM-DD
     const endDate = endOfMonth.toISOString().split('T')[0];
 
     fetchRequestCount(startDate, endDate);
+
+    // fetchRequestCount(selectedStart.format('YYYY-MM-DD'), selectedEnd.format('YYYY-MM-DD'));
 
     const allDayCheckbox = document.getElementById('allDayCheckbox');
     const allDayCheckboxEdit = document.getElementById('allDayCheckboxEdit');
@@ -336,23 +417,31 @@ document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('addEventModal').addEventListener('hidden.bs.modal', function () {
         const allDayCheckbox = document.getElementById('allDayCheckbox');
         allDayCheckbox.checked = false;
+        // Reset form
         eventForm.reset();
 
+        // Re-enable the end date field if the checkbox is unchecked
         endInput.disabled = false;
 
+        // Reset the all-day checkbox
         allDayCheckbox.checked = false;
 
+        // Clear any previously set values for start and end date
         startInput.value = '';
         endInput.value = '';
     });
 
     document.getElementById('editEventModal').addEventListener('hidden.bs.modal', function () {
+        // Reset form
         eventFormEdit.reset();
 
+        // Re-enable the end date field if the checkbox is unchecked
         endInputEdit.disabled = false;
 
+        // Reset the all-day checkbox
         allDayCheckboxEdit.checked = false;
 
+        // Clear any previously set values for start and end date
         startInputEdit = '';
         endInputEdit = '';
     });
@@ -377,11 +466,11 @@ document.addEventListener('DOMContentLoaded', function () {
     allDayCheckbox.addEventListener('change', function () {
         if (this.checked && startInput.value) {
             const startDate = new Date(startInput.value);
-            startDate.setHours(0, 0); 
+            startDate.setHours(0, 0); // Set start to 00:00
             startInput.value = formatToDatetimeLocal(startDate);
 
             const endDate = new Date(startDate);
-            endDate.setHours(23, 59); 
+            endDate.setHours(23, 59); // Set end to 23:59
             endInput.value = formatToDatetimeLocal(endDate);
 
         } else {
@@ -392,11 +481,11 @@ document.addEventListener('DOMContentLoaded', function () {
     allDayCheckboxEdit.addEventListener('change', function () {
         if (this.checked && startInputEdit.value) {
             const startDate = new Date(startInputEdit.value);
-            startDate.setHours(0, 0);
+            startDate.setHours(0, 0); // Set start to 00:00
             startInputEdit.value = formatToDatetimeLocal(startDate);
 
             const endDate = new Date(startDate);
-            endDate.setHours(23, 59);
+            endDate.setHours(23, 59); // Set end to 23:59
             endInputEdit.value = formatToDatetimeLocal(endDate);
 
         } else {
@@ -407,11 +496,11 @@ document.addEventListener('DOMContentLoaded', function () {
     startInput.addEventListener('change', function () {
         if (allDayCheckbox.checked && startInput.value) {
             const startDate = new Date(startInput.value);
-            startDate.setHours(0, 0); 
+            startDate.setHours(0, 0); // Ensure start at 00:00
             startInput.value = formatToDatetimeLocal(startDate);
 
             const endDate = new Date(startDate);
-            endDate.setHours(23, 59); 
+            endDate.setHours(23, 59); // End of same day
             endInput.value = formatToDatetimeLocal(endDate);
         }
     });  
@@ -441,6 +530,7 @@ document.addEventListener('DOMContentLoaded', function () {
             return false;
         }
 
+        // Add to BOTH submit handlers before AJAX call
         const start = new Date($(this).find("[name='eventStart']").val());
         const end = new Date($(this).find("[name='eventEnd']").val());
 
@@ -469,8 +559,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
                         $("#addEventModal").modal("hide");
 
+                        // Close any open detail row
                         document.querySelectorAll('.fc-custom-detail-row').forEach(el => el.remove());
 
+                        // Clear the openDetailDate variable if it's being used globally
                         if (typeof openDetailDate !== "undefined") {
                             openDetailDate = null;
                         }
@@ -497,6 +589,7 @@ document.addEventListener('DOMContentLoaded', function () {
         let isValid = true; 
         let missingFields = []; 
     
+        // Check if all required fields are filled
         $(this).find("[required]").each(function () {
             let value = $(this).val();
             
@@ -509,12 +602,14 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
         
+        // If validation fails, show a warning
         if (!isValid) {
             event.preventDefault(); 
             toastr.warning("Please fill in the required fields: " + missingFields.join(", "));
             return false;
         }
 
+        // Add to BOTH submit handlers before AJAX call
         const start = new Date($(this).find("[name='eventStartEdit']").val());
         const end = new Date($(this).find("[name='eventEndEdit']").val());
 
@@ -524,6 +619,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
     
+        // Serialize the form data for submission
         let formData = $(this).serialize();
         console.log("Data being sent:", formData); 
 
@@ -531,6 +627,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         console.log("Edit: ", schedId)
     
+        // Send the data via AJAX to edit the priest record
         $.ajax({
             type: "PUT",
             url: `/edit-schedule/${schedId}`, 
@@ -546,8 +643,11 @@ document.addEventListener('DOMContentLoaded', function () {
                         $("#eventEditForm")[0].reset();
 
                         $("#editEventModal").modal("hide");
+
+                        // Close any open detail row
                         document.querySelectorAll('.fc-custom-detail-row').forEach(el => el.remove());
 
+                        // Clear the openDetailDate variable if it's being used globally
                         if (typeof openDetailDate !== "undefined") {
                             openDetailDate = null;
                         }
@@ -628,6 +728,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const countCards = document.querySelectorAll(".countCard");
 
         if (calendar.style.display === "none") {
+            // Show calendar
             calendar.style.display = "block";
             calendar.classList.add("col-lg-5");
             request.classList.remove("col-lg-12");
@@ -637,6 +738,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 card.classList.add("col-lg-4");
             });
         } else {
+            // Hide calendar
             calendar.style.display = "none";
             calendar.classList.remove("col-lg-5");
             request.classList.remove("col-lg-7");
@@ -648,7 +750,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    $('#requestTable').on('change', '.status-dropdown', function () {
+    $('#requestTableStaff').on('change', '.status-dropdown', function () {
         const newStatus = $(this).val();
         const requestId = $(this).data('id');
 
@@ -664,7 +766,11 @@ document.addEventListener('DOMContentLoaded', function () {
                     toastr[response.type](response.message); 
     
                     if (response.type === "success") {
-                      $('#requestTable').DataTable().ajax.reload(); 
+                        $('#requestTableStaff').DataTable().ajax.reload();
+                        const startDate = startOfMonth.toISOString().split('T')[0]; // Format: YYYY-MM-DD
+                        const endDate = endOfMonth.toISOString().split('T')[0];
+
+                        fetchRequestCount(startDate, endDate); 
                     } 
                 } else {
                     toastr.error("Unexpected response format!");
@@ -682,7 +788,9 @@ document.addEventListener('DOMContentLoaded', function () {
     $(document).on('click', '.search-record-btn', function () {
         const ceremony = $(this).data('ceremony');
         const recName = $(this).data('rec-name');
-        const cerDate = $(this).data('cer-date');
+        const cerYear = $(this).data('cer_year');
+        const cerMonth = $(this).data('cer_month');
+        const cerDay = $(this).data('cer_day');
 
         $.ajax({
             url: '/api_db/search-record',
@@ -691,7 +799,9 @@ document.addEventListener('DOMContentLoaded', function () {
             data: JSON.stringify({
                 ceremony: ceremony,
                 rec_name: recName,
-                cer_date: cerDate
+                cer_year: cerYear,
+                cer_month: cerMonth,
+                cer_day: cerDay
             }),
             success: function (response) {
                 if (response.found) {
@@ -717,6 +827,7 @@ document.addEventListener('DOMContentLoaded', function () {
             if (response.matches && response.matches.length > 1) {
                 let accordionHTML = '';
                 response.matches.forEach((match, index) => {
+                    // Automatically fetch the data for each record
                     console.log("Ceremony and Id:", match.id, match.ceremony)
                     fetchRecordData(match.id, index, match.ceremony, match.name);
 
@@ -737,12 +848,15 @@ document.addEventListener('DOMContentLoaded', function () {
                     `;
                 });
 
+                // Insert the accordion HTML into the modal
                 document.getElementById('accordionExample').innerHTML = accordionHTML;
 
+                // Open the modal
                 $('#searchResultsModal').modal('show');
             } else {
                 let recordsHTML = '';
                 response.matches.forEach((match, index) => {
+                    // Automatically fetch the data for each record
                     fetchRecordData(match.id, index, match.ceremony, match.name);
 
                     recordsHTML += `
@@ -754,6 +868,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     `;
                 });
 
+                // Insert the records into the modal
                 document.getElementById('searchResultsModalBody').innerHTML = recordsHTML;
                 $('#searchResultsModal').modal('show');
             }
@@ -777,7 +892,7 @@ document.addEventListener('DOMContentLoaded', function () {
         fetch(`/api_db/${ceremonyType}/view/${recordId}`)
             .then(response => response.json())
             .then(data => {
-                let recordDetailsHTML = ''; 
+                let recordDetailsHTML = '';  // Initialize the variable before using it
 
                 if (data.data) {
                     const ceremony = data.data[0]; 
@@ -911,17 +1026,19 @@ document.addEventListener('DOMContentLoaded', function () {
                             recordDetailsHTML += '<p>No data available for this ceremony.</p>';
                         }
                     } else if (ceremonyType === 'wedding') {
+                        // Wedding logic: Compare recName with groom and bride names
                         let partnerFullName = '';
                         let name = '';
                         if (ceremony.groom && ceremony.bride) {
                             const groomFullName = `${ceremony.groom.first_name} ${ceremony.groom.middle_name || ''} ${ceremony.groom.last_name}`.trim();
                             const brideFullName = `${ceremony.bride.first_name} ${ceremony.bride.middle_name || ''} ${ceremony.bride.last_name}`.trim();
 
+                            // Compare the recName with the groom and bride names
                             if (recName.toLowerCase() === groomFullName.toLowerCase()) {
                                 partnerFullName = brideFullName;
-                                name = groomFullName;
+                                name = groomFullName; // Display bride's name
                             } else if (recName.toLowerCase() === brideFullName.toLowerCase()) {
-                                partnerFullName = groomFullName;
+                                partnerFullName = groomFullName; // Display groom's name
                                 name = brideFullName;
                             }
                         }
@@ -968,6 +1085,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         recordDetailsHTML += '<p>No data available for this ceremony.</p>';
                     }
 
+                    // Ensure the element exists before trying to update it
                     const detailsElement = document.getElementById(`recordDetails${index}`);
                     if (detailsElement) {
                         detailsElement.innerHTML = recordDetailsHTML;

@@ -2,8 +2,7 @@ from . import db
 
 class Barangay(db.Model):
     __tablename__ = 'refbrgy'
-    id = db.Column(db.Integer, primary_key=True)
-    brgyCode = db.Column(db.String(255), unique=True, nullable=True)
+    brgyCode = db.Column(db.String(255), primary_key=True, nullable=False)
     brgyDesc = db.Column(db.Text)
     regCode = db.Column(db.String(255), nullable=True)
     provCode = db.Column(db.String(255), nullable=True)

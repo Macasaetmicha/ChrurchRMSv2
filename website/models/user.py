@@ -27,8 +27,8 @@ class User(db.Model, UserMixin):
     death = db.relationship('Death', back_populates='user', uselist=False)
 
     record = db.relationship("Record", back_populates="user")
-    request = db.relationship("Request", back_populates="user", foreign_keys='Request.user_id')
-    completed_by_user = db.relationship("Request", back_populates="user", foreign_keys='Request.completed_by')
+    requests = db.relationship("Request", back_populates="user", foreign_keys='Request.user_id')
+    completed_requests = db.relationship("Request", back_populates="user", foreign_keys='Request.completed_by')
 
 
 

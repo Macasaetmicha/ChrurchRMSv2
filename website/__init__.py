@@ -4,13 +4,14 @@ from flask_login import LoginManager
 from os import path
 import os
 from flask_migrate import Migrate
+from flask_mail import Mail
 
 from .config.config import Config
 
 db = SQLAlchemy()
 migrate = Migrate()
 login_manager = LoginManager()
-
+mail = Mail()
 
 def create_app():
     app = Flask(__name__, static_url_path="")
@@ -25,8 +26,11 @@ def create_app():
     login_manager.init_app(app)
     login_manager.login_view = 'auth.login'
 
-    from .models import User, Record, Parent, Priest, Baptism, Confirmation, Wedding, Death
+    from .models import User, Request, Schedule, Record, Parent, Priest, Baptism, Confirmation, Wedding, Death
 
+    with app.app_context():
+        from .controllers import audit
+    
     @login_manager.user_loader
     def load_user(user_id):
         return User.query.get(int(user_id))
@@ -45,5 +49,15 @@ def create_app():
     app.register_blueprint(fido_bp)
     app.register_blueprint(api_db, url_prefix='/api_db')
     app.register_blueprint(api_route)
+
+    #Mail Configurations
+    app.config['MAIL_SERVER'] = 'smtp.gmail.com'
+    app.config['MAIL_PORT'] = 587
+    app.config['MAIL_USE_TLS'] = True
+    app.config['MAIL_USERNAME'] = 'sjp.carmonacavite@gmail.com' 
+    app.config['MAIL_PASSWORD'] = 'hlha qnpm tfjl raul' 
+    app.config['MAIL_DEFAULT_SENDER'] = ('St. Joseph Carmona Online', 'sjp.carmonacavite@gmail.com')
+
+    mail.init_app(app)
 
     return app

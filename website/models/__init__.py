@@ -19,6 +19,7 @@ from .barangay import Barangay
 from .enums import UserRole
 from .request import Request
 from .schedule import Schedule
+from .audit_logs import AuditLog
 
 print("Models imported.") 
 print("Models have been imported successfully.")

@@ -1,13 +1,15 @@
 from website import create_app
 from flask import Flask, request, redirect
-from flask_login import LoginManager
+from flask_login import LoginManager, current_user
+from sqlalchemy_continuum import versioning_manager
+
 
 import os
 import fido2.features
 from urllib.parse import urlparse
 
 # configure the fido library
-fido2.features.webauthn_json_mapping.enabled = True  # this simplifies the conversion from and to json
+fido2.features.webauthn_json_mapping.enabled = True  
 
 app = create_app()
 
@@ -21,6 +23,7 @@ app.config.update(
     # tell flask-login to store its state in the session (and not in the url)
     USE_SESSION_FOR_NEXT=True
 )
+
 
 @app.before_request
 def validate_domain():
