@@ -21,6 +21,9 @@ class User(db.Model, UserMixin):
 
     role = db.Column(Enum(UserRole), default=UserRole.CLIENT, nullable=False)
 
+    otp_code = db.Column(db.String(6), nullable=True)
+    otp_expiration = db.Column(db.DateTime, nullable=True)
+    
     baptism = db.relationship('Baptism', back_populates='user', uselist=False)
     confirmation = db.relationship('Confirmation', back_populates='user', uselist=False)
     wedding = db.relationship('Wedding', back_populates='user', uselist=False)

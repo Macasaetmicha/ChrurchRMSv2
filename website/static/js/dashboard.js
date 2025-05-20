@@ -22,7 +22,7 @@ document.addEventListener('DOMContentLoaded', function () {
             method: 'GET',
             failure: () => toastr.error("Failed to load request events"),
             success: function(data) {
-                return data.data; 
+                return data.data; // Access the 'data' property and return the events
             }
         }
         ],
@@ -53,10 +53,12 @@ document.addEventListener('DOMContentLoaded', function () {
                 const start = new Date(event.start);
                 let end = new Date(event.end || event.start);
 
+                // If all-day event and end has time 00:00, subtract 1 day for accurate range
                 if (event.allDay && end.getHours() === 0 && end.getMinutes() === 0) {
                     end.setDate(end.getDate() - 1);
                 }
 
+                // Normalize times for comparison
                 start.setHours(0, 0, 0, 0);
                 end.setHours(0, 0, 0, 0);
 
@@ -70,6 +72,7 @@ document.addEventListener('DOMContentLoaded', function () {
             detailCell.colSpan = 7;
 
             if (eventsForDate.length > 0) {
+                // Group events
                 const parishEvents = eventsForDate.filter(ev => {
                     return !ev.classNames.includes("event-request") && !ev.classNames.includes("event-holiday");
                 });
@@ -82,6 +85,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 const formatDateTime = (date) => `${formatDate(date)} (${formatTime(date)})`;
 
+                // Format Parish Events
                 let parishItems = '';
                 if (parishEvents.length > 0) {
                     const sortedParishEvents = parishEvents.sort((a, b) => a.start - b.start);
@@ -115,12 +119,15 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
 
 
+                // Function to convert a string to title case
                 const toTitleCase = str => str.replace(/\w\S*/g, word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase());
 
+                // Format Document Requests
                 let requestItems = '';
                 if (requestEvents.length > 0) {
+                    // Group the request events by status
                     const groupedRequests = requestEvents.reduce((groups, ev) => {
-                        const status = ev.extendedProps.status || 'Unknown'; 
+                        const status = ev.extendedProps.status || 'Unknown';  // Group by status
                         if (!groups[status]) {
                             groups[status] = [];
                         }
@@ -128,6 +135,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         return groups;
                     }, {});
 
+                    // Create HTML for each group
                     for (let status in groupedRequests) {
                         const requests = groupedRequests[status];
                         
@@ -150,6 +158,7 @@ document.addEventListener('DOMContentLoaded', function () {
                                 </li>`;
                         }).join('');
 
+                        // Append the status heading in title case and the request items for that status
                         requestItems += `
                             <em>${toTitleCase(status)}</em>
                             <ul>
@@ -160,6 +169,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
 
+                // Format Holidays
                 let holidayItems = '';
                 if (holidayEvents.length > 0) {
                     holidayItems = holidayEvents.map(ev => {
@@ -199,6 +209,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
 
 
+                // Build the final display
                 detailCell.innerHTML = holidaySection + scheduleSection + requestSection;
             } else {
                 detailCell.innerHTML = `<em>No schedules for ${new Date(clickedDate).toDateString()}</em>`;
@@ -220,9 +231,9 @@ document.addEventListener('DOMContentLoaded', function () {
         },
 
         dayCellDidMount: function(info) {
-            const day = info.date.getDay(); 
+            const day = info.date.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
 
-            if (day >= 3 && day <= 5) { 
+            if (day >= 3 && day <= 5) { // Wednesday to Friday
                 info.el.classList.add('highlight-wed-fri');
             }
         },
@@ -231,6 +242,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     calendar.render();
 
+    // Previous/Next buttons event listeners
     document.getElementById('prevBtn').addEventListener('click', () => {
         calendar.prev();
         openDetailDate = null;
@@ -243,8 +255,9 @@ document.addEventListener('DOMContentLoaded', function () {
         document.querySelectorAll('.fc-custom-detail-row').forEach(el => el.remove());
     });
 
+    // New "Go to Current Month" button event listener
     document.getElementById('currentMonthBtn').addEventListener('click', () => {
-        calendar.today();
+        calendar.today(); // This will take the calendar to the current month
         openDetailDate = null;
         document.querySelectorAll('.fc-custom-detail-row').forEach(el => el.remove());
     });
@@ -266,32 +279,31 @@ document.addEventListener('DOMContentLoaded', function () {
         placement: 'left',
     });
 
-    function populateDashboardCarousel(data) {
-    function updateList(listId, emptyId, items) {
-        const listEl = document.getElementById(listId);
-        const emptyEl = document.getElementById(emptyId);
-
-        if (!items || items.length === 0) {
-        listEl.classList.add('d-none');
-        emptyEl.classList.remove('d-none');
-        } else {
-        emptyEl.classList.add('d-none');
-        listEl.classList.remove('d-none');
-        listEl.innerHTML = items.map(item => `<li class="list-group-item">${item}</li>`).join('');
-        }
+    function fetchRequestCount(startDate, endDate) {
+        $.ajax({
+            url: `/api_db/get-request/count?start=${startDate}&end=${endDate}`,
+            type: "GET",
+            success: function (data) {
+                $(".reviewCount").text(data.pending || 0);
+                $(".inprogCount").text(data.processing || 0);
+                $(".pickupCount").text(data.ready || 0);
+                $(".rejectCount").text(data.rejected || 0);
+                $(".cancelCount").text(data.cancelled || 0);
+                $(".completeCount").text(data.completed || 0);
+            },
+            error: function () {
+                console.error("Error fetching record count.");
+            }
+        });
     }
 
-    updateList('pendingRequestsList', 'pendingRequestsEmpty', data.pendingRequests);
-    updateList('pickupDocumentsList', 'pickupDocumentsEmpty', data.documentsToPickUp);
-    updateList('cancelledDocumentsList', 'cancelledDocumentsEmpty', data.cancelledDocuments);
-    updateList('schedulesOfDayList', 'schedulesOfDayEmpty', data.schedulesOfDay);
-    }
+    const today = new Date();
+    const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+    const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
 
-    populateDashboardCarousel({
-    pendingRequests: ['Request #123', 'Request #124'],
-    documentsToPickUp: [],
-    cancelledDocuments: ['Request #122'],
-    schedulesOfDay: ['Mass at 8 AM', 'Wedding at 3 PM']
-    });
+    const startDate = startOfMonth.toISOString().split('T')[0]; // Format: YYYY-MM-DD
+    const endDate = endOfMonth.toISOString().split('T')[0];
+
+    fetchRequestCount(startDate, endDate);
 
 });

@@ -14,12 +14,14 @@ function displayFailure() {
 
     authenticateButton.innerText = "Try Again";
     authenticateButton.classList.remove("d-none");
+    buttonDiv.classList.remove("d-none");
+
 }
 
 function displayInProgress() {
     fidoLayout.displayInProgress();
     authenticateButton.classList.add("d-none");
-    buttonDiv.style.display = "none";
+    buttonDiv.classList.add("d-none");
 }
 
 async function onAuthenticateButtonClicked() {

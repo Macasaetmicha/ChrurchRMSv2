@@ -12,7 +12,7 @@ document.addEventListener('click', function(e) {
 });
 
 function handleEdit(category, id) {
-    let url, formSelector, modalSelector, fieldMap = null;  
+    let url, formSelector, modalSelector, fieldMap = null;  // Initialize fieldMap to null
 
     switch (category) {
         case 'priest':
@@ -274,6 +274,7 @@ $(document).ready(function () {
         let isValid = true; 
         let missingFields = []; 
     
+        // Check if all required fields are filled
         $(this).find("[required]").each(function () {
             let value = $(this).val();
             
@@ -286,17 +287,20 @@ $(document).ready(function () {
             }
         });
         
+        // If validation fails, show a warning
         if (!isValid) {
             event.preventDefault(); 
             toastr.warning("Please fill in the required fields: " + missingFields.join(", "));
             return false;
         }
     
+        // Serialize the form data for submission
         let formData = $(this).serialize();
         console.log("Data being sent:", formData); 
 
         const priestId = $("#id").val();
     
+        // Send the data via AJAX to edit the priest record
         $.ajax({
             type: "PUT",
             url: `/edit-priest/${priestId}`, 
@@ -344,17 +348,20 @@ $(document).ready(function () {
             }
         });
         
+        // If validation fails, show a warning
         if (!isValid) {
             event.preventDefault(); 
             toastr.warning("Please fill in the required fields: " + missingFields.join(", "));
             return false;
         }
     
+        // Serialize the form data for submission
         let formData = $(this).serialize();
         console.log("Data being sent:", formData); 
 
         const recordId = $("#rec_id").val();
     
+        // Send the data via AJAX to edit the priest record
         $.ajax({
             type: "PUT",
             url: `/edit-record/${recordId}`, 
@@ -390,6 +397,7 @@ $(document).ready(function () {
         let isValid = true; 
         let missingFields = []; 
     
+        // Check if all required fields are filled
         $(this).find("[required]").each(function () {
             let value = $(this).val();
             
@@ -402,17 +410,20 @@ $(document).ready(function () {
             }
         });
         
+        // If validation fails, show a warning
         if (!isValid) {
             event.preventDefault(); 
             toastr.warning("Please fill in the required fields: " + missingFields.join(", "));
             return false;
         }
     
+        // Serialize the form data for submission
         let formData = $(this).serialize();
         console.log("Data being sent:", formData); 
 
         const baptismId = $("#id").val();
     
+        // Send the data via AJAX to edit the priest record
         $.ajax({
             type: "PUT",
             url: `/edit-baptism/${baptismId}`, 
@@ -448,7 +459,7 @@ $(document).ready(function () {
         let isValid = true; 
         let missingFields = []; 
     
-        
+        // Check if all required fields are filled
         $(this).find("[required]").each(function () {
             let value = $(this).val();
             
@@ -461,17 +472,20 @@ $(document).ready(function () {
             }
         });
         
+        // If validation fails, show a warning
         if (!isValid) {
             event.preventDefault(); 
             toastr.warning("Please fill in the required fields: " + missingFields.join(", "));
             return false;
         }
     
+        // Serialize the form data for submission
         let formData = $(this).serialize();
         console.log("Data being sent:", formData); 
 
         const confirmationId = $("#id").val();
     
+        // Send the data via AJAX to edit the priest record
         $.ajax({
             type: "PUT",
             url: `/edit-confirmation/${confirmationId}`, 
@@ -507,7 +521,7 @@ $(document).ready(function () {
         let isValid = true; 
         let missingFields = []; 
     
-        
+        // Check if all required fields are filled
         $(this).find("[required]").each(function () {
             let value = $(this).val();
             
@@ -520,20 +534,20 @@ $(document).ready(function () {
             }
         });
         
-        
+        // If validation fails, show a warning
         if (!isValid) {
             event.preventDefault(); 
             toastr.warning("Please fill in the required fields: " + missingFields.join(", "));
             return false;
         }
     
-        
+        // Serialize the form data for submission
         let formData = $(this).serialize();
         console.log("Data being sent:", formData); 
 
         const weddingId = $("#id").val();
     
-        
+        // Send the data via AJAX to edit the priest record
         $.ajax({
             type: "PUT",
             url: `/edit-wedding/${weddingId}`, 
@@ -569,7 +583,7 @@ $(document).ready(function () {
         let isValid = true; 
         let missingFields = []; 
     
-        
+        // Check if all required fields are filled
         $(this).find("[required]").each(function () {
             let value = $(this).val();
             
@@ -582,20 +596,20 @@ $(document).ready(function () {
             }
         });
         
-        
+        // If validation fails, show a warning
         if (!isValid) {
             event.preventDefault(); 
             toastr.warning("Please fill in the required fields: " + missingFields.join(", "));
             return false;
         }
     
-        
+        // Serialize the form data for submission
         let formData = $(this).serialize();
         console.log("Data being sent:", formData); 
 
         const deathId = $("#id").val();
     
-        
+        // Send the data via AJAX to edit the priest record
         $.ajax({
             type: "PUT",
             url: `/edit-death/${deathId}`, 

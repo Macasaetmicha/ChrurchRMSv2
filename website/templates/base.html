@@ -70,6 +70,7 @@
         <script src="{{ url_for('static', filename='js/report.js') }}"></script>
         <!-- <script src="{{ url_for('static', filename='js/audit.js') }}"></script> -->
         <script src="{{ url_for('static', filename='js/request_client.js') }}"></script>
+        
 
         <!-- <script src="{{ url_for('static', filename='js/date-picker.js') }}"></script> -->
         <!-- <script src="{{ url_for('static', filename='js/dropdowns.js') }}"></script> -->
@@ -129,6 +130,7 @@
                         <a class="nav-link {% if active_page == 'report' %}active{% endif %}" href="/admin/report">Report</a>
                     </li>
                     {% if current_user.role == UserRole.ADMIN %}
+                    <!-- Only visible to Admin -->
                     <li class="nav-item">
                         <a class="nav-link {% if active_page == 'audit' %}active{% endif %}" href="/admin/audit-log">History</a>
                     </li>

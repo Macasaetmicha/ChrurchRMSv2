@@ -40,11 +40,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
     modals.forEach(modal => {
         modal.addEventListener('hidden.bs.modal', function () {
+            // Collapse all accordion sections inside THIS modal
             let accordionItems = modal.querySelectorAll('.accordion-collapse.show');
             accordionItems.forEach(item => {
                 new bootstrap.Collapse(item).hide();
             });
 
+            // Reset all accordion buttons inside THIS modal
             let accordionButtons = modal.querySelectorAll('.accordion-button');
             accordionButtons.forEach(button => {
                 button.classList.add('collapsed');

@@ -11,7 +11,7 @@ const createTable = (selector, ajaxUrl, columns) => {
     });
 };
 
-
+// Setup data table columns
 const recordsColumns = [
     {
         data: null,
@@ -42,7 +42,7 @@ const recordsColumns = [
     },
     { data: 'ligitivity' },
     { data: 'birthplace' },
-    
+    // { data: 'status' },
     { 
         data: null, 
         render: function(data, type, row) {
@@ -432,7 +432,7 @@ const reqClientColumns = [
 
 ];
 
-const tables = {}; 
+const tables = {}; // Store multiple table instances
 
 $(document).ready(function() {
     tables.recordTable = createTable('#recordTable', '/api_db/records', recordsColumns);
@@ -453,7 +453,7 @@ $(document).ready(function() {
                     if (type === 'display' || type === 'filter') {
                         return formatDateTimeLong(data);
                     }
-                    return data; 
+                    return data; // Use ISO string for sorting
                 }
             },
             { data: 'action' },
@@ -494,13 +494,13 @@ $(document).ready(function() {
         // pageLength: 10,
         autoWidth: false,
         columnDefs: [
-            { width: '160px', targets: 0 },  
-            { width: '100px', targets: 1 },  
-            { width: '100px', targets: 2 },  
-            { width: '80px',  targets: 3 },  
-            { width: '120px', targets: 4 },  
-            { width: '300px', targets: 5 },  
-            { width: '300px', targets: 6 },  
+            { width: '160px', targets: 0 },  // changed_at
+            { width: '100px', targets: 1 },  // action
+            { width: '100px', targets: 2 },  // table_name
+            { width: '80px',  targets: 3 },  // record_id
+            { width: '120px', targets: 4 },  // changed_by
+            { width: '300px', targets: 5 },  // old_data
+            { width: '300px', targets: 6 },  // new_data
         ],
         paging: true,
         searching: true,
@@ -510,7 +510,7 @@ $(document).ready(function() {
 
 
     
-    
+    // 🔗 Handle PDF Button
     document.querySelectorAll('.btn-pdf').forEach(button => {
         button.addEventListener('click', function () {
             const tableId = this.getAttribute('data-table');
@@ -533,16 +533,16 @@ function exportAllVisibleTableToPDF(tableId, dataTable, fileName, base64Image) {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF('landscape');
 
-    
+    // Temporarily show all rows
     dataTable.page.len(-1).draw();
 
-    
+    // Clone the full table with all rows visible
     const tableClone = document.getElementById(tableId).cloneNode(true);
 
-    
-    dataTable.page.len(10).draw(); 
+    // Restore pagination
+    dataTable.page.len(10).draw(); // Reset to default page size
 
-    
+    // Remove the Action column
     const headers = tableClone.querySelectorAll('thead tr');
     const bodyRows = tableClone.querySelectorAll('tbody tr');
 
@@ -563,29 +563,29 @@ function exportAllVisibleTableToPDF(tableId, dataTable, fileName, base64Image) {
         }
     });
 
-    
+    // Add a new <th> as first column header
     headers.forEach(row => {
         const th = document.createElement('th');
         th.textContent = '#';
         row.insertBefore(th, row.firstChild);
     });
 
-    
+    // Add <td> with row numbers
     bodyRows.forEach((row, index) => {
         const td = document.createElement('td');
         td.textContent = index + 1;
         row.insertBefore(td, row.firstChild);
     });
-    
+    // Add left-aligned image and text
     const imageX = 10;
     const imageY = 10;
     const imageWidth = 15;
     const imageHeight = 15;
     doc.addImage(logoBase64, 'PNG', imageX, imageY, imageWidth, imageHeight);
 
-    
-    const textX = imageX + imageWidth +1; 
-    const textY = imageY + 7;              
+    // Add text aligned next to image
+    const textX = imageX + imageWidth +1; // small space between image and text
+    const textY = imageY + 7;              // vertically aligned with image center
 
     doc.setFontSize(12);
     doc.setFont(undefined, 'bold');
@@ -595,7 +595,7 @@ function exportAllVisibleTableToPDF(tableId, dataTable, fileName, base64Image) {
     doc.setFont(undefined, 'italic');
     doc.text(`${fileName} Record`, textX, textY + 5);
 
-    
+    // Replace all dropdowns with selected option text before exporting
     tableClone.querySelectorAll('select').forEach(select => {
         const td = select.closest('td');
         if (td) {
@@ -603,10 +603,10 @@ function exportAllVisibleTableToPDF(tableId, dataTable, fileName, base64Image) {
         }
     });
 
-    
+    // Draw table below header
     doc.autoTable({
         html: tableClone,
-        startY: imageY + imageHeight + 5, 
+        startY: imageY + imageHeight + 5, // space after header section
         theme: 'grid',
         headStyles: {
             fillColor: [169, 169, 169],
@@ -625,12 +625,12 @@ function exportAllVisibleTableToPDF(tableId, dataTable, fileName, base64Image) {
         showHead: 'everyPage'
     });
 
-    
+    // Save PDF
     doc.save(`${fileName}.pdf`);
 }
 
 
-
+// Function to format date to YYYY-MM-DD
 function formatDate(dateString) {
     const date = new Date(dateString);
     const year = date.getFullYear();

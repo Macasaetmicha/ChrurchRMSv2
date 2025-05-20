@@ -12,7 +12,7 @@ cachetools
 
 rapidfuzz
 Flask-Mail
-
+request
 
 #For Migrations
 $env:FLASK_APP = "main.py"

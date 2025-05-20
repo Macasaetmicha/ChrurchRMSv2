@@ -28,6 +28,7 @@ def create_app():
 
     from .models import User, Request, Schedule, Record, Parent, Priest, Baptism, Confirmation, Wedding, Death
 
+    # Register the audit listener module here:
     with app.app_context():
         from .controllers import audit
     
@@ -54,8 +55,8 @@ def create_app():
     app.config['MAIL_SERVER'] = 'smtp.gmail.com'
     app.config['MAIL_PORT'] = 587
     app.config['MAIL_USE_TLS'] = True
-    app.config['MAIL_USERNAME'] = 'sjp.carmonacavite@gmail.com' 
-    app.config['MAIL_PASSWORD'] = 'hlha qnpm tfjl raul' 
+    app.config['MAIL_USERNAME'] = 'sjp.carmonacavite@gmail.com'  # your email
+    app.config['MAIL_PASSWORD'] = 'hlha qnpm tfjl raul'  # use app password for Gmail
     app.config['MAIL_DEFAULT_SENDER'] = ('St. Joseph Carmona Online', 'sjp.carmonacavite@gmail.com')
 
     mail.init_app(app)

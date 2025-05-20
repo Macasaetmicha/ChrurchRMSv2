@@ -13,11 +13,11 @@ def index():
 def home():
     user_requests = Request.query.filter_by(user_id=current_user.id).all()
 
-    
-    
+    # Optionally, you can process the data (e.g., convert enums to strings)
+    # Example:
     for req in user_requests:
-        req.type = req.ceremony.value  
-        req.status = req.status.value  
+        req.type = req.ceremony.value  # assuming enum ceremony
+        req.status = req.status.value  # assuming enum status
     print("These are the User Requests: ", user_requests)
     return render_template("home.html", active_page='home', user_requests=user_requests, user=current_user, UserRole=UserRole)
 
@@ -26,7 +26,7 @@ def home():
 def request():
     return render_template("request_client.html", active_page='request', user=current_user, UserRole=UserRole)
 
-
+# Request form page
 @views.route('/request-form', methods=['GET', 'POST'])
 @login_required
 def request_form():

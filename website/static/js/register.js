@@ -25,7 +25,7 @@ document.addEventListener("DOMContentLoaded", () => {
         authenticateButton.onclick = onAuthenticateButtonClicked;
     }
 
-    
+    // Add Account Form submission
     $("#signupForm").on("submit", function (event) {
         event.preventDefault();
 
@@ -134,8 +134,8 @@ async function onAuthenticateButtonClicked() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-            response,   
-            user_id: userId  
+            response,   // spread the FIDO client response fields
+            user_id: userId  // include the user ID
         }),
     });
     let data = await result.json();

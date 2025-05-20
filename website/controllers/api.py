@@ -267,8 +267,6 @@ def update_begin():
         print(f"Error during update_begin: {e}")
         return jsonify({'message': f"Internal Server Error: {str(e)}"}), 500
 
-
-
 @api.route("/update/complete", methods=["POST"])
 @login_required
 def update_complete():
@@ -295,6 +293,99 @@ def update_complete():
         db.session.rollback()
         print(f"Error saving FIDO info: {e}")
         return jsonify({'message': 'Internal Server Error'}), 500
+
+@api.route("/recover/begin", methods=["POST"])
+def recover_begin():
+    """Clients call this endpoint to register a new fido token. The endpoint returns a challenge which is then processed
+    by the fido token. The client uses the register_complete endpoint to send the signed challenge back to the server.
+    flask-login ensures that this endpoint can only be accessed by authenticated users."""
+
+    data = request.get_json()
+    user_id = data.get('user_id') 
+
+    print("User ID: ", user_id)
+
+    if not user_id:
+        return jsonify({"status": "error", "message": "User ID is required"}), 400
+
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({"status": "error", "message": "User not found"}), 404
+    
+    if user.fido_info:
+        print(f"User already has a fido token registered. {user.fido_info}")
+        
+    else:
+        print(f"User does not have a fido token registered. {user.fido_info}")
+        return jsonify({"status": "error", "message": "fido has hasn't been activated"}), 400
+
+    # create a challenge for the client
+    options, state = fido_server.register_begin(
+        PublicKeyCredentialUserEntity(
+            # according to the documentation the id should be unique and shouldn't contain user related information
+            id=uuid.uuid4().bytes,
+            # the client might present these fields to the user
+            name=user.username,
+            display_name=f'{user.first_name} {user.last_name}',
+        ),
+        # The token shouldn't ask the user to verify his identity (e.g. using a PIN). This would be redundant because
+        # the user already verified his identity during the first login step (by providing his username and password).
+        user_verification=fido2.webauthn.UserVerificationRequirement.DISCOURAGED,
+    )
+
+    # store some information (e.g. the challenge that was just send to the client) on the server. The register_complete
+    # endpoint needs it to verify the response of the client.
+    active_challenges[user_id] = state
+    print(f"Stored challenge for user {user_id}: {active_challenges.get(user_id)}")
+
+    print('RUN SUCCESSFUL')
+
+    return jsonify(dict(options)), 200
+
+@api.route("/recover/complete", methods=["POST"])
+def recover_complete():
+    """This endpoint is called by the client to register a new fido token. The client first retrieves a challenge from
+    register_begin which is then processed by the token. The final result is sent back to this api endpoint which
+    validates it and persists it in the database. flask-login ensures that this endpoint can only be accessed by
+    authenticated users."""
+    data = request.get_json()
+    user_id = data.get('user_id') 
+    response = data.get('response') 
+    
+    if not user_id:
+        return jsonify({"status": "error", "message": "User ID is required"}), 400
+    print("CHECKING FOR USER")
+    user = User.query.get(user_id)
+    if not user.fido_info:
+        print("No fido info")
+        return jsonify({"status": "error", "message": "FIDO has already been activated"}), 400
+
+    print("FIDO STATE")
+    fido_state = active_challenges.pop(user_id, None)
+    if fido_state is None:
+        print(f"No fido_state found for user_id: {user_id}")
+        return jsonify({"status": "error", "message": "FIDO challenge expired or missing"}), 400
+
+    print("REGISTER FIDO INFO")
+    try:
+        auth_data = fido_server.register_complete(fido_state, response)
+    except Exception as e:
+        print(f"Error in register_complete: {e}")
+        return jsonify({"status": "error", "message": "Invalid FIDO payload"}), 400
+
+    print("CHANGNG FIDO INFO")
+    try:
+        user.fido_info = auth_data.hex()  # ✅ Update fido_info directly
+        db.session.commit()
+
+        print(f"User created and FIDO info saved for user_id: {user.id}")
+
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error saving new user: {e}")
+        return jsonify({"status": "error", "message": "Failed to save user"}), 500
+
+    return jsonify({"status": "OK", "type":"success", "message": "Recovery Successful"})
 
 
 @api.route("/authenticate/begin", methods=["POST"])

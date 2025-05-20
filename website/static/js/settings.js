@@ -117,6 +117,7 @@ document.addEventListener("DOMContentLoaded", () => {
         resendOtpBtn.disabled = true;
     })
 
+    let userId = null; 
     sendOtpBtn.addEventListener('click', () => {
         const enteredPhone = existingPhoneInput.value.trim();
         const now = Date.now();
@@ -139,24 +140,39 @@ document.addEventListener("DOMContentLoaded", () => {
             url: '/api_db/get-current-user',
             method: 'GET',
             success: function(user) {
+                console.log(user)
+                userId = user.id;
                 currentPhone = user.contact_number;
+                fetch('/send-otp', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ user_id: userId, phone: enteredPhone }),
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.message) {
+                        // Show OTP step and start timer
+                        step1.classList.add('d-none');
+                        document.getElementById('modalHeader').textContent = 'Enter OTP';
+                        step2.classList.remove('d-none');
+                        
+                        toastr.success('OTP sent to your current phone number.');
+                        
+                    } else {
+                        toastr.error('Error: ' + (data.error || 'Unknown error'));
+                    }
+                })
+                .catch(() =>toastr.error('Network error. Please try again.'));
 
-                console.log("Fetched Current Phone:", currentPhone);
-                console.log("Entered Number:", enteredPhone);
+                // console.log("Fetched Current Phone:", currentPhone);
+                // console.log("Entered Number:", enteredPhone);
 
-                if (enteredPhone !== currentPhone) {
-                    toastr.error('Entered number does not match your current phone number.');
-                    return;
-                }
+                // if (enteredPhone !== currentPhone) {
+                //     toastr.error('Entered number does not match your current phone number.');
+                //     return;
+                // }
 
-                // Show OTP step and start timer
-                step1.classList.add('d-none');
-                document.getElementById('modalHeader').textContent = 'Enter OTP';
-                step2.classList.remove('d-none');
                 
-                startOtpTimer();
-
-                toastr.success('OTP sent to your current phone number.');
             },
             error: function(err) {
                 console.error("Failed to fetch user info:", err);
@@ -165,12 +181,12 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 
-    resendOtpBtn.addEventListener('click', () => {
-        otpInput.value = '';
-        startOtpTimer();
-        toastr.success('OTP resent.');
-        resendOtpBtn.disabled = true;
-    });
+    // resendOtpBtn.addEventListener('click', () => {
+    //     otpInput.value = '';
+    //     startOtpTimer();
+    //     toastr.success('OTP resent.');
+    //     resendOtpBtn.disabled = true;
+    // });
 
     const otpInputs = document.querySelectorAll('#otpBoxContainer .otp-box');
 
@@ -202,9 +218,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 toastr.error('Maximum OTP attempts reached. Please try again after 5 minutes.');
 
-                // Calculate unlock timestamp
-                const unlockTime = Date.now() + lockoutDurationMs;
-                localStorage.setItem('otpUnlockTime', unlockTime);
+                // // Calculate unlock timestamp
+                // const unlockTime = Date.now() + lockoutDurationMs;
+                // localStorage.setItem('otpUnlockTime', unlockTime);
 
                 otpInputs.forEach(input => {
                     input.value = '';
@@ -212,7 +228,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 });
                 document.getElementById('verifyOtpBtn').disabled = true;
 
-                startLockoutTimer(unlockTime);
+                // startLockoutTimer(unlockTime);
                 return;
             }
 
@@ -222,10 +238,33 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
-        // OTP is correct
-        step2.classList.add('d-none');
-        step3.classList.remove('d-none');
-        clearInterval(otpCountdown);
+        if (enteredOtp.length !== 6) {
+            toastr.error('Please enter a valid 6-digit OTP.');
+            return;
+        }
+
+        // Send OTP to backend (endpoint: /verify-otp) — implement separately
+        fetch('/verify-otp', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ otp: enteredOtp , user_id:userId})  // optionally add user_id
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.message) {
+                // OTP is correct
+                step2.classList.add('d-none');
+                step3.classList.remove('d-none');
+                // clearInterval(otpCountdown);
+            } else {
+                toastr.error('Error: ' + (data.error || 'Unknown error'));
+            }
+        })
+        .catch(() => {
+            toastr.error('Network error. Please try again.');
+        });
+
+        
     });
 
     updatePhoneBtn.addEventListener('click', async () => {
@@ -241,7 +280,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         try {
-            const res = await fetch('/api/check-phone', {
+            const res = await fetch('/api_db/check-phone', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({ phone: newPhone })
@@ -258,7 +297,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 return;
             }
 
-            const updateRes = await fetch('/api/update-recovery-phone', {
+            const updateRes = await fetch('/api_db/update-phone', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({ contact_number: newPhone })

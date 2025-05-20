@@ -9,7 +9,7 @@ import fido2.features
 from urllib.parse import urlparse
 
 # configure the fido library
-fido2.features.webauthn_json_mapping.enabled = True  
+fido2.features.webauthn_json_mapping.enabled = True  # this simplifies the conversion from and to json
 
 app = create_app()
 
