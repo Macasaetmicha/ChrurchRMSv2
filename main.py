@@ -28,24 +28,6 @@ app.config.update(
 def validate_domain():
     pass  # disable the localhost-only redirect
 
-    """For security reasons fido can only be used on encrypted pages (HTTPS) that use a valid certificate. Since this
-    application uses a self-signed certificate it would normally not be possible to demonstrate FIDO. Fortunately most
-    browsers accept self-signed certificates if the host is 'localhost'."""
-
-    expected_host = 'localhost'
-    url = urlparse(request.url)
-
-    # redirect if the host is not localhost or if the client is not using HTTPS
-    if url.hostname != expected_host or url.scheme != "https":
-        # unfortunately the hostname can't be modified directly; we have to modify the netloc instead
-        port = url.port or 443
-        netloc = f'{expected_host}:{port}'
-
-
-        # the documentation recommends to use this function:
-        # https://docs.python.org/3/library/urllib.parse.html#urllib.parse.urlparse
-        url = url._replace(netloc=netloc, scheme="https")
-        return redirect(url.geturl())
 
 
 @app.after_request
