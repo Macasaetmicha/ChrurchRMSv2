@@ -48,11 +48,11 @@ def register_begin():
         return jsonify({"status": "error", "message": "User ID is required"}), 400
 
     if temp_user.get("fido_info"):
-        print(f"User already has a fido token registered. {temp_user.get("fido_info")}")
+        print(f"User already has a fido token registered. {temp_user.get('fido_info')}")
         session.pop(f"temp_user_{user_id}", None)
         return jsonify({"status": "error", "message": "fido has already been activated"}), 400
     else:
-        print(f"User does not have a fido token registered. {temp_user.get("fido_info")}")
+        print(f"User does not have a fido token registered. {temp_user.get('fido_info')}")
 
     # create a challenge for the client
     options, state = fido_server.register_begin(
@@ -147,11 +147,11 @@ def registerStaff_begin():
     # print(f"User information: ", user)
 
     if temp_user.get("fido_info"):
-        print(f"User already has a fido token registered. {temp_user.get("fido_info")}")
+        print(f"User already has a fido token registered. {temp_user.get('fido_info')}")
         session.pop(f"temp_user_{user_id}", None)
         return jsonify({"status": "error", "message": "fido has already been activated"}), 400
     else:
-        print(f"User does not have a fido token registered. {temp_user.get("fido_info")}")
+        print(f"User does not have a fido token registered. {temp_user.get('fido_info')}")
 
     # create a challenge for the client
     options, state = fido_server.register_begin(
