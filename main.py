@@ -36,7 +36,9 @@ def validate_domain():
     # redirect if the host is not localhost or if the client is not using HTTPS
     if url.hostname != expected_host or url.scheme != "https":
         # unfortunately the hostname can't be modified directly; we have to modify the netloc instead
-        netloc = f'{expected_host}:{url.port}'
+        port = url.port or 443
+        netloc = f'{expected_host}:{port}'
+
 
         # the documentation recommends to use this function:
         # https://docs.python.org/3/library/urllib.parse.html#urllib.parse.urlparse
