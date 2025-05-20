@@ -497,7 +497,7 @@ def submit_confirmation():
 
             # Add Client if record does not exist
             if client["record"]["id"] is None:
-                full_address = f"{data.get("addressLine")}, {data.get("barangay")}, {data.get("cityMun")}, {data.get("province")}, {data.get("region")}"
+                full_address = f"{data.get('addressLine')}, {data.get('barangay')}, {data.get('cityMun')}, {data.get('province')}, {data.get('region')}"
 
                 print(f"Full Address: {full_address}")
 
