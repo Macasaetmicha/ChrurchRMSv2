@@ -26,6 +26,8 @@ app.config.update(
 
 @app.before_request
 def validate_domain():
+pass  # disable the localhost-only redirect
+
     """For security reasons fido can only be used on encrypted pages (HTTPS) that use a valid certificate. Since this
     application uses a self-signed certificate it would normally not be possible to demonstrate FIDO. Fortunately most
     browsers accept self-signed certificates if the host is 'localhost'."""
