@@ -1,7 +1,6 @@
 from website import create_app
 from flask import Flask, request, redirect
 from flask_login import LoginManager, current_user
-from sqlalchemy_continuum import versioning_manager
 
 
 import os
