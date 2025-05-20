@@ -18,3 +18,5 @@ pymysql
 flask
 fido2
 gunicorn
+flask-sqlalchemy
+psycopg2-binary 
