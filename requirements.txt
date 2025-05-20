@@ -11,4 +11,4 @@ cachetools
 
 rapidfuzz
 Flask-Mail
-request
+requests
