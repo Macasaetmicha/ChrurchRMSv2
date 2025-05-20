@@ -1,0 +1,14 @@
+flask
+flask-login
+flask-sqlalchemy
+webauthn
+pymysql
+flask-migrate
+werkzeug
+
+fido2 
+cachetools
+
+rapidfuzz
+Flask-Mail
+requests
